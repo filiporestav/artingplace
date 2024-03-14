@@ -2,20 +2,20 @@
     <div>
         <h1>Paintings</h1>
         <div class="paintings-container">
-            <Painting v-for="painting in paintings" 
+            <PaintingItem v-for="painting in paintings" 
             :key="painting.id"
             :title="painting.title"
             :imgSource="painting.imgSource"
             :likes="painting.likes"
             :artist="painting.artist"
             :price="painting.price">
-        </Painting>
+        </PaintingItem>
         </div>
     </div>
 </template>
 
 <script setup>
-import Painting from './Painting.vue'
+import PaintingItem from './PaintingItem.vue'
 
 const paintings = [
     { id: 1, imgSource: "...", title: "Painting 1", likes: 5, artist: "Filip", price: 499 },
