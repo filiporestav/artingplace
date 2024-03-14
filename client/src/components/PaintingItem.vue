@@ -5,7 +5,7 @@
         </div>
         <div class="card-body">
             <a href="/">
-                <img src="../assets/artwork1.jpg" class="card-img-top" alt="...">
+                <img :src="imgName" class="card-img-top" alt="...">
             </a>
         </div>
         <div class="card-footer text-body-secondary">
@@ -16,18 +16,23 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const props = defineProps({
     title: String,
     likes: Number,
     artist: String,
     price: Number,
-    imgSource: String
+    imgName: String
 })
 
 const title = ref(props.title)
 const likes = ref(props.likes)
+
+// retrieve images dynamically, source: https://skirtles-code.github.io/vue-examples/guides/working-with-image-assets
+const imgName = computed(() => {
+    return new URL(`../assets/${props.imgName}.jpg`, import.meta.url).href
+})
 
 </script>
 

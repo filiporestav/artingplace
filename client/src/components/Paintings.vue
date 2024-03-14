@@ -5,7 +5,7 @@
             <PaintingItem v-for="painting in paintings" 
             :key="painting.id"
             :title="painting.title"
-            :imgSource="painting.imgSource"
+            :imgName="painting.imgName"
             :likes="painting.likes"
             :artist="painting.artist"
             :price="painting.price">
@@ -18,8 +18,8 @@
 import PaintingItem from './PaintingItem.vue'
 
 const paintings = [
-    { id: 1, imgSource: "...", title: "Painting 1", likes: 5, artist: "Filip", price: 499 },
-    { id: 2, imgSource: "...", title: "Painting 2", likes: 3, artist: "Hedda", price: 899 }
+    { id: 1, imgName: "artwork1", title: "Painting 1", likes: 5, artist: "Filip", price: 499 },
+    { id: 2, imgName: "artwork2", title: "Painting 2", likes: 3, artist: "Hedda", price: 899 }
 ]
 
 </script>

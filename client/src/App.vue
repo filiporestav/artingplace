@@ -1,12 +1,20 @@
 <template>
-  <Navbar></Navbar>
+  <NavBar></NavBar>
   <div class="main-content">
     <router-view></router-view>
   </div>
 </template>
 
 <script setup>
-import Navbar from './components/Navbar.vue'
+import NavBar from './components/NavBar.vue'
+import io from 'socket.io-client'
+
+const socket = io().connect()
+
+socket.emit("connection", () => {
+  console.log("Client socket connected")
+})
+
 </script>
 
 <style scoped>

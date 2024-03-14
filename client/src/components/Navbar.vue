@@ -18,7 +18,7 @@
           <input type="search" class="form-control" placeholder="Search..." aria-label="Search">
         </form>
 
-        <div class="dropdown text-end">
+        <div v-if="authenticated" class="dropdown text-end">
           <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
             <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
           </a>
@@ -30,8 +30,29 @@
             <li><router-link to="/logout" class="dropdown-item">Sign out</router-link></li>
           </ul>
         </div>
+        <div v-else>
+          <nav class="navbar">
+          <form class="container-fluid justify-content-start">
+            <button class="btn btn-primary" @click="redirect('/login')" type="button">Login</button>
+          </form>
+        </nav>
+        </div>
       </div>
     </div>
   </header>
-
 </template>
+
+<script setup>
+import { userDataStore } from '@/js/stores/authenticated'
+import { useRouter } from 'vue-router'
+
+const store = userDataStore()
+const router = useRouter()
+
+const authenticated = store.authenticated
+
+function redirect(target) {
+  router.push(target)
+}
+
+</script>

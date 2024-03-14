@@ -4,14 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "devStart": "nodemon ./src/app.js",
+    "devStart": "nodemon src/index.js",
     "lint": "run-script-os",
     "lint:darwin:linux": "eslint 'src/**/*.js' ; prettier --check src/",
     "lint:fix": "run-script-os",
     "lint:fix:darwin:linux": "eslint --fix 'src/**/*.js' ; prettier --write src/",
     "lint:fix:win32": "eslint --fix src/**/*.js & prettier --write src/",
     "lint:win32": "eslint src/**/*.js & prettier --check src/",
-    "start": "node src/app.js"
+    "start": "node src/index.js"
   },
   "keywords": [],
   "author": "",
@@ -24,7 +24,11 @@
     "run-script-os": "^1.1.6"
   },
   "dependencies": {
-    "express": "^4.18.3"
+    "express": "^4.18.3",
+    "express-session": "^1.18.0",
+    "morgan": "^1.10.0",
+    "socket.io": "^4.7.4",
+    "uuid": "^9.0.1"
   },
   "type": "module"
 }
