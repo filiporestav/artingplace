@@ -5,12 +5,32 @@ import user from './controllers/user.controller.js'
 import { Server } from 'socket.io'
 import model from './model.js'
 import morgan from 'morgan'
-import path from 'path'
+import { resolvePath } from "./util.js"
+import betterLogging from 'better-logging'
+import db from './db.js'
 
 const port = process.env.PORT || 8989;
 const app = express(); // Build an express server
 const server = createServer(app)
 const io = new Server(server)
+
+const { Theme } = betterLogging;
+betterLogging(console, {
+    color: Theme.green,
+})
+
+console.logLevel = 4; // Enable all logging
+
+// Register custom middleware for logging incoming requests
+app.use(
+    betterLogging.expressMiddleware(console, {
+        ip: { show: true, color: Theme.green.base },
+        method: { show: true, color: Theme.green.base },
+        header: { show: false },
+        path: { show: true },
+        body: { show: true },
+    })
+)
 
 const sessionMiddleware = session({
     secret: 'mySecret',
@@ -29,7 +49,8 @@ io.engine.use(sessionMiddleware)
 app.use(morgan('combined'))
 
 // Serve static files
-app.use(express.static(path.join(__dirname, 'public')));
+// app.use(express.static(resolvePath("client", "dist")));
+app.use(express.static(resolvePath('client', 'dist')))
 
 // Register middlewares that parse the body of the request, available under req.body property
 app.use(express.json())
@@ -40,6 +61,9 @@ app.use("/api", user.router)
 
 // Init the model with the socket instance
 model.init(io)
+
+// Setup or connect to db
+
 
 io.on("connection", (socket) => {
     console.log("Client connected to socket!")

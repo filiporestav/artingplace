@@ -2,7 +2,7 @@
   <div class="sign-in-container">
     <main class="form-signin w-100 m-auto">
     <form>
-      <img class="mb-4" src="..." alt="" width="72" height="57">
+      <img class="mb-4" src="" alt="" width="72" height="57">
       <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
 
       <div class="form-floating">
@@ -11,7 +11,11 @@
       </div>
       <div class="form-floating">
         <input v-model="password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
-        <label for="floatingPassword">Password</label>
+        <label for="floatingPassword" autocomplete="on">Password</label>
+      </div>
+
+      <div v-if="message!== ''" id="msg-text">
+            {{message}}
       </div>
 
       <div class="form-check text-start my-3">
@@ -20,7 +24,7 @@
           Remember me
         </label>
       </div>
-      <button @click="login" class="btn btn-primary w-100 py-2" type="submit">Sign in</button>
+      <button @click.prevent="login" class="btn btn-primary w-100 py-2" type="submit">Sign in</button>
     </form>
     </main>
   </div>
@@ -29,27 +33,28 @@
 
 <script setup>
 import { ref } from 'vue'
+import { userDataStore } from '../js/stores/authenticated.js'
+import UserService from '../services/UserService.js'
+import { useRouter } from 'vue-router'
+
+const store = userDataStore()
+const router = useRouter()
 
 const email = ref("")
 const password = ref("")
+const message = ref('')
 
 function login() {
-  fetch("/api/login"), {
-    method: 'POST',
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({email, password})
-  }
-  .then((response) => {
-    if (!response.ok)
-      return new Error("Failed to send valid credentials")
-  })
-  .then(
-    console.log(response.json())
-  )
-  .catch(err => {
-    console.error(err)
+  const promise = UserService.login(email.value, password.value)
+  promise.then((data) => {
+    store.authenticated = data.authenticated
+    store.username = data.username
+    message.value = data.message
+
+    // Redirect to paintings page if successfully logged in
+    if (store.authenticated) {
+      router.push("/paintings")
+    }
   })
 }
 

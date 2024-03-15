@@ -1,6 +1,8 @@
 <template>
     <div>
+      <h1></h1>
         <h1>Paintings</h1>
+        <h2 v-if="username">{{ username }}, here you can find some really inspiring artwork!</h2>
         <div class="paintings-container">
             <PaintingItem v-for="painting in paintings" 
             :key="painting.id"
@@ -16,6 +18,11 @@
 
 <script setup>
 import PaintingItem from './PaintingItem.vue'
+import { userDataStore } from '../js/stores/authenticated';
+import { storeToRefs } from 'pinia'
+
+const store = userDataStore()
+const { username } = storeToRefs(store)
 
 const paintings = [
     { id: 1, imgName: "artwork1", title: "Painting 1", likes: 5, artist: "Filip", price: 499 },

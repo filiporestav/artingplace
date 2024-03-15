@@ -2,11 +2,8 @@
     <header class="p-3 mb-3 border-bottom">
     <div class="container">
       <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
-        <a class="navbar-brand" href="/">
+        <a class="navbar-brand">
           <img src="../assets/Artingplace.png" alt="Artingplace logo" width="200" height="40">
-        </a>
-        <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-dark text-decoration-none">
-          <svg class="bi me-2" width="40" height="32" role="img" aria-label="Bootstrap"><use xlink:href="#bootstrap"></use></svg>
         </a>
 
         <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
@@ -27,15 +24,20 @@
             <li><router-link to="/settings" class="dropdown-item">Settings</router-link></li>
             <li><router-link to="/profile" class="dropdown-item">Profile</router-link></li>
             <li><hr class="dropdown-divider"></li>
-            <li><router-link to="/logout" class="dropdown-item">Sign out</router-link></li>
+            <li><button @click="logout" class="dropdown-item">Sign out</button></li>
           </ul>
         </div>
-        <div v-else>
+        <div v-else class="navbar-btns">
           <nav class="navbar">
           <form class="container-fluid justify-content-start">
             <button class="btn btn-primary" @click="redirect('/login')" type="button">Login</button>
           </form>
-        </nav>
+          </nav>
+          <nav class="navbar">
+          <form class="container-fluid justify-content-start">
+            <button class="btn btn-primary" @click="redirect('/register')" type="button">Register</button>
+          </form>
+          </nav>
         </div>
       </div>
     </div>
@@ -43,16 +45,29 @@
 </template>
 
 <script setup>
-import { userDataStore } from '@/js/stores/authenticated'
+import { userDataStore } from '../js/stores/authenticated'
 import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
 
 const store = userDataStore()
 const router = useRouter()
 
-const authenticated = store.authenticated
+const { authenticated } = storeToRefs(store)
 
 function redirect(target) {
   router.push(target)
 }
 
+function logout() {
+  console.log("Logged out")
+  store.authenticated = false
+  store.username = null
+}
+
 </script>
+
+<style scoped>
+.navbar-btns {
+  display: flex;
+}
+</style>
