@@ -8,6 +8,7 @@ import morgan from 'morgan'
 import { resolvePath } from "./util.js"
 import betterLogging from 'better-logging'
 import db from './db.js'
+import helmet from 'helmet'
 
 const port = process.env.PORT || 8989;
 const app = express(); // Build an express server
@@ -40,6 +41,9 @@ const sessionMiddleware = session({
 
 // Setup middleware for express
 app.use(sessionMiddleware)
+
+// Enable Helmet Express middleware for security
+app.use(helmet())
 
 // Share the session context from express with the Socket.IO server
 // read more here https://socket.io/how-to/use-with-express-session
