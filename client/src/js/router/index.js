@@ -4,6 +4,7 @@ import Paintings from '../../components/Paintings.vue';
 import About from '../../components/About.vue';
 import Login from '../../components/Login.vue';
 import Register from '../../components/Register.vue';
+import AddPainting from '../../components/AddPainting.vue';
 
 // Define the routes
 const routes = [
@@ -26,6 +27,10 @@ const routes = [
     {
         path: '/register',
         component: Register
+    },
+    {
+        path: '/addpainting',
+        component: AddPainting
     }
 ]
 

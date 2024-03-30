@@ -58,6 +58,7 @@ router.post("/user", async (req, res) => {
 
             model.getUsernameFromEmail(email)
             .then(username => {
+                model.addUser(req.session.id) // Add the client cookie as an identifier for the session
                 return res.status(201).send({authenticated: true, username: username, message: "Correct credentials!"})
             })
         }
@@ -68,11 +69,6 @@ router.post("/user", async (req, res) => {
 // API endpoint for User registration
 router.put("/user", async (req, res) => {
     const { email, username, password, confirmedPassword } = req.body;
-    console.log("Received PUT req");
-    console.log("Email", email);
-    console.log("Username", username);
-    console.log("Password", password);
-    console.log("Confirmed Password", confirmedPassword);
     if (password !== confirmedPassword) {
         return res.status(400).send({message: "Password and confirmed password do not match"});
     }
@@ -136,6 +132,13 @@ router.put("/user", async (req, res) => {
 router.delete("/user", (req, res) => {
     const { id } = req.session
     console.log(id)
+    const user = model.findUserById(id)
+    console.log(user)
+    if (user) {
+        console.log("Found valid user when signing out.")
+        res.status(200).send({signedOut: true})
+    }
+    else res.status(405).send({signedOut: false}) // 405 Method Not Allowed returned if no user found with the id
 })
 
 export default { router, requireAuth }

@@ -9,6 +9,7 @@
         <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
           <li><router-link to="/paintings" class="nav-link px-2 link-secondary">All paintings</router-link></li>
           <li><router-link to="/about" class="nav-link px-2 link-secondary">About Us</router-link></li>
+          <li v-if="authenticated"><router-link to="/addpainting" class="nav-link px-2 link-secondary">Add painting</router-link></li>
         </ul>
 
         <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
@@ -48,6 +49,7 @@
 import { userDataStore } from '../js/stores/authenticated'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
+import UserService from '../services/UserService.js'
 
 const store = userDataStore()
 const router = useRouter()
@@ -59,9 +61,17 @@ function redirect(target) {
 }
 
 function logout() {
-  console.log("Logged out")
-  store.authenticated = false
-  store.username = null
+  const promise = UserService.logout()
+  promise.then((data) => {
+    console.log(data)
+    if (data.signedOut) {
+      store.authenticated = false
+      store.username = null
+      console.log("Logged out")
+    } else {
+      console.log("Problem signing out")
+    }
+  })
 }
 
 </script>

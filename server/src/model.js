@@ -40,6 +40,15 @@ class Model {
     }
 
     /**
+     * Deletes a user from the model
+     * @param {String} id - The id of the session (unique)
+     * @returns {void}
+     */
+    deleteUser(id) {
+        delete this.users[id]
+    }
+
+    /**
      * Finds an user by its ID.
      * @param {String} id - The id of the session (unique)
      * @returns {User}
