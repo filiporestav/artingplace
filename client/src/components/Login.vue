@@ -49,6 +49,7 @@ function login() {
   promise.then((data) => {
     store.authenticated = data.authenticated
     store.username = data.username
+    store.cookie = data.cookie
     message.value = data.message
 
     // Redirect to paintings page if successfully logged in

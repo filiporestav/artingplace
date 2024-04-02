@@ -20,15 +20,14 @@ const dbRun = promisify(db.run.bind(db))
 
 // Function to reset the database tables
 async function resetTables() {
-    return new Promise((resolve) => {
-        const delUserTable = `DROP TABLE IF EXISTS users`
-        db.run(delUserTable)
-        const delPaintingsTable = `DROP TABLE IF EXISTS paintings`
-        db.run(delPaintingsTable)
-        const delImagesTable = `DROP TABLE IF EXISTS images`
-        db.run(delImagesTable)
-        resolve()
-    })
+    const delUserTable = `DROP TABLE IF EXISTS users`
+    await dbRun(delUserTable)
+    const delPaintingsTable = `DROP TABLE IF EXISTS paintings`
+    await dbRun(delPaintingsTable)
+    const delImagesTable = `DROP TABLE IF EXISTS images`
+    await dbRun(delImagesTable)
+    const delLikesTable = `DROP TABLE IF EXISTS user_likes`
+    await dbRun(delLikesTable)
 }
 
 // await resetTables()
@@ -63,6 +62,18 @@ CREATE TABLE IF NOT EXISTS paintings (
 )`
 
 await dbRun(createPaintingsTable)
+
+// Create junction table to store likes
+const createLikesTable = `
+CREATE TABLE IF NOT EXISTS user_likes (
+    user_id TEXT,
+    painting_id TEXT,
+    PRIMARY KEY (user_id, painting_id),
+    FOREIGN KEY (user_id) REFERENCES users (user_id),
+    FOREIGN KEY (painting_id) REFERENCES paintings (painting_id)
+);`
+
+await dbRun(createLikesTable)
 
 const createImagesTable = `
 CREATE TABLE IF NOT EXISTS images (

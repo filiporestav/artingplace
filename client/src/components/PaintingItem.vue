@@ -1,7 +1,7 @@
 <template>
     <div class="card" style="width: 18rem;">
         <div class="card-header">
-            {{name}} by <strong>{{ username }}</strong>
+            Title: {{name}} <div v-if="username">by <strong>{{ username }}</strong></div>
         </div>
         <div class="card-body">
             <router-link :to="'/painting/' + id">
@@ -10,12 +10,18 @@
         </div>
         <div class="card-footer text-body-secondary">
             ${{ price }}
-            <i class="bi bi-heart">{{ likes }}</i>
+            <button @click="like"><i class="bi bi-heart">{{ likes }}</i></button>
         </div>
     </div>
 </template>
 
 <script setup>
+import { userDataStore } from '../js/stores/authenticated.js';
+import { storeToRefs } from 'pinia'
+
+const userStore = userDataStore()
+const { authenticated } = storeToRefs(userStore)
+
 const props = defineProps({
     id: String,
     name: String,
@@ -34,6 +40,33 @@ const getImageDataUrl = () => {
         return ''; // or you can have a placeholder image URL here
     }
 }
+
+// Like the painting
+function like() {
+    if (!authenticated.value) {
+        console.log(authenticated.value)
+        console.log("You must sign in to like a painting")
+    }
+    else {
+        fetch(`/api/like/${props.id}`, {
+        method: 'POST',
+        })
+        .then((response) => {
+            if (response.ok) {
+                return response.json()
+            }
+            else {
+                throw new Error("Bad response when trying to like the painting")
+            }
+        })
+        .then((data) => {
+            props.likes = data.likes // Update the likes
+        })
+        .catch(error => {
+            console.error("Failed to like the painting", error)
+        })
+    }
+    }
 
 </script>
 
