@@ -9,7 +9,7 @@ import bootstrap from 'bootstrap/dist/js/bootstrap.bundle.js' // For js
 
 const pinia = createPinia() // Used for state management
 const app = createApp(App)
-app.use(pinia)
 app.use(router)
+app.use(pinia)
 app.use(bootstrap)
 app.mount('#app')

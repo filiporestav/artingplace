@@ -55,7 +55,7 @@ router.post("/user", async (req, res) => {
         console.log("Correct credentials!");
         model.addUser(user.user_id, user.username); // Add the client cookie as an identifier for the session
         res.cookie("niceCookie", user.user_id)
-        return res.status(201).send({authenticated: true, username: user.username, message: "Correct credentials!"});
+        return res.status(201).send({authenticated: true, cookie: user.user_id, username: user.username, message: "Correct credentials!"});
     } catch (error) {
         console.error("Error during user login:", error);
         return res.status(500).send({authenticated: false, message: "Internal Server Error"});

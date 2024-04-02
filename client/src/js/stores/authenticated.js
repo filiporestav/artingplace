@@ -5,6 +5,7 @@ export const userDataStore = defineStore('userDataStore', {
     state: () => ({
         authenticated: false,
         username: null,
+        cookie: null,
     }),
     actions: {
         login() {

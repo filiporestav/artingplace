@@ -69,12 +69,31 @@ router.get("/paintings", async (req, res) => {
     }
 });
 
+// Get all paintings from a specific user with a specific cookie
+router.get("/myPaintings", async (req, res) => {
+    const userId = req.cookies.niceCookie
+    try {
+        const userPaintings = await dbAll(`SELECT * FROM paintings WHERE user_id = ?`, userId); // Get all paintings
+        for (const painting of userPaintings) {
+            const featuredImage = await dbGet(`SELECT data FROM images WHERE image_id = ? LIMIT 1`, painting.featured_image_id)
+            painting.featuredImageData = featuredImage.data // Send the photo (bulb) as well
+        }
+        res.status(200).json(userPaintings);
+    } catch (error) {
+        console.error("Error fetching paintings:", error);
+        res.status(500).send("Error fetching paintings");
+    }
+});
+
 // Get the painting info from a specific painting ID
 router.get("/painting/:paintingId", async (req, res) => {
     const paintingId = req.params.paintingId
     try {
         const painting = await dbGet(`SELECT * FROM paintings WHERE painting_id = ?`, paintingId)
         if (painting) {
+            const user = await dbGet(`SELECT * FROM users WHERE user_id = ?`, painting.user_id)
+            painting.email = user.email
+            painting.username = user.username
             res.status(200).json(painting)
         }
         else {
@@ -109,6 +128,30 @@ router.get("/painting/images/:paintingId", async (req, res) => {
         res.status(500).send("Error fetching images");
     }
 });
+
+router.post("/like/:paintingId", async (req, res) => {
+    const paintingId = req.params.paintingId
+    const userCookie = req.cookies.niceCookie
+    const userExists = await dbGet(`SELECT * FROM users WHERE user_id = ?`, userCookie)
+    if (userExists) {
+        // Check if trying to like their own painting
+        const myOwnPaintings = await dbGet(`SELECT * FROM paintings WHERE painting_id = ? AND user_id = ?`, [paintingId, userCookie])
+
+        // Check if user already has liked this painting
+        const alreadyLiked = await dbGet(`SELECT * FROM user_likes WHERE user_id = ? AND PAINTING_id = ?`, [userCookie, paintingId])
+
+        if (myOwnPaintings) res.status(405).send("Could not like your own painting")
+        else if (alreadyLiked) res.status(405).send("You have already likes this painting")
+        else {
+            // Insert the likes in the user_likes table
+            await dbRun(`INSERT INTO user_likes (user_id, painting_id) VALUES (?, ?)`, [userCookie, paintingId])
+            // Update the likes by 1 in the paintings table
+            await dbRun(`UPDATE paintings SET likes = likes + 1 WHERE painting_id = ?`, paintingId)
+            const likes = await dbGet(`SELECT likes FROM paintings WHERE painting_id = ?`, paintingId)
+            res.status(200).json(likes)
+        }
+    }
+})
 
 
 

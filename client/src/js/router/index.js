@@ -6,6 +6,7 @@ import Login from '../../components/Login.vue';
 import Register from '../../components/Register.vue';
 import AddPainting from '../../components/AddPainting.vue';
 import PaintingPage from '../../components/PaintingPage.vue';
+import MyPaintings from '../../components/MyPaintings.vue';
 
 // Define the routes
 const routes = [
@@ -36,6 +37,10 @@ const routes = [
     {
         path: '/painting/:paintingId',
         component: PaintingPage
+    },
+    {
+        path: '/myPaintings',
+        component: MyPaintings
     }
 ]
 

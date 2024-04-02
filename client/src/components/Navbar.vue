@@ -21,7 +21,7 @@
             <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
           </a>
           <ul class="dropdown-menu text-small" style="">
-            <li><router-link to="/sellpainting" class="dropdown-item">Sell painting</router-link></li>
+            <li><router-link to="/mypaintings" class="dropdown-item">My paintings</router-link></li>
             <li><router-link to="/settings" class="dropdown-item">Settings</router-link></li>
             <li><router-link to="/profile" class="dropdown-item">Profile</router-link></li>
             <li><hr class="dropdown-divider"></li>

@@ -9,6 +9,8 @@
         class="painting-image" 
         :key="index">
       <p>{{ painting.description }}</p>
+      <p><strong>Seller: {{ painting.username }}</strong></p>
+      <p><strong>Email to seller: <a :href="`mailto:${painting.email}`">{{ painting.email }}</a></strong></p>
       <p><strong>Price: ${{ painting.price }}</strong></p>
       <p><strong>Likes: {{ painting.likes }}</strong></p>
       <button @click="addToCart">Add to Cart</button>
