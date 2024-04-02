@@ -8,7 +8,12 @@ class UserService {
             body: JSON.stringify({email, username, password, confirmedPassword})
         })
         .then((response) => {
-            return response.json()
+            data = response.json()
+            if (response.ok) {
+                data['status'] = 'ok' // Used for vue frontend, if user should sign in automatically or not
+            }
+            else { data['status'] = 'invalid' }
+            return data
         })
         .catch((err) => {
             console.error(err)

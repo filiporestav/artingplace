@@ -1,48 +1,62 @@
 <template>
-    <div>
-      <h1></h1>
-        <h1>Paintings</h1>
-        <h2 v-if="username">{{ username }}, here you can find some really inspiring artwork!</h2>
-        <div class="paintings-container">
-            <PaintingItem v-for="painting in paintings" 
-            :key="painting.id"
-            :title="painting.title"
-            :imgName="painting.imgName"
+  <div>
+      <h1>Paintings</h1>
+      <h2 v-if="userStore.authenticated">{{ userStore.username }}, here you can find {{ paintings.length }} artworks!</h2>
+      <h2 v-else>Here you can find some really inspiring artwork! Browse through {{ paintings.length }} fantastic paintings.</h2>
+      <div class="paintings-container">
+          <PaintingItem
+            v-for="(painting, index) in paintings"
+            :key="index"
+            :id="painting.painting_id"
+            :name="painting.name"
+            :username="painting.username"
+            :featuredImage="painting.featuredImageData"
             :likes="painting.likes"
-            :artist="painting.artist"
-            :price="painting.price">
-        </PaintingItem>
-        </div>
-    </div>
+            :price="painting.price"
+          ></PaintingItem>
+      </div>
+  </div>
 </template>
 
 <script setup>
 import PaintingItem from './PaintingItem.vue'
 import { userDataStore } from '../js/stores/authenticated';
-import { storeToRefs } from 'pinia'
+import { ref, onMounted } from 'vue';
 
-const store = userDataStore()
-const { username } = storeToRefs(store)
+const userStore = userDataStore()
 
-const paintings = [
-    { id: 1, imgName: "artwork1", title: "Painting 1", likes: 5, artist: "Filip", price: 499 },
-    { id: 2, imgName: "artwork2", title: "Painting 2", likes: 3, artist: "Hedda", price: 899 }
-]
+const paintings = ref([])
+
+onMounted(() => {
+  fetch("/api/paintings", {
+    method: "GET",
+  })
+  .then(response => {
+    if (response.ok) {
+      return response.json()
+    }
+    else throw new Error("Error from GET request from paintings")
+  })
+  .then(data => {
+    paintings.value = data // Update the paintings array with our fetched data
+  })
+  .catch(err => {
+    console.error(err)
+  })
+})
 
 </script>
 
 <style scoped>
 .paintings-container {
   display: flex;
-  flex-wrap: wrap; /* Enable wrapping to multiple rows */
-  width: fit-content; /* Shrink container to fit content */
+  flex-wrap: wrap;
+  width: fit-content;
   margin: 30px auto;
   gap: 15px;
-  justify-content: space-between; /* Distribute evenly within container */
+  justify-content: space-between;
 }
-
 .painting {
-  flex-basis: calc(25% - 15px); /* Adjust based on desired painting width and gap */
+  flex-basis: calc(25% - 15px);
 }
-
 </style>

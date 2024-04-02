@@ -1,7 +1,12 @@
 import { Router } from 'express'
 import model from '../model.js'
 import db from '../db.js'
+import { v4 as uuidv4 } from 'uuid' // Used to generate random IDs for every user
+import { promisify } from 'util'
+import bcrypt from 'bcrypt'
 
+const dbRun = promisify(db.run.bind(db))
+const dbGet = promisify(db.get.bind(db))
 const router = Router()
 
 /**
@@ -28,114 +33,83 @@ const requireAuth = (req, res, next) => {
 // API endpoint for User Login
 router.post("/user", async (req, res) => {
     const { email, password } = req.body;
+    /* 
     console.log("Got user login request");
-    console.log(email)
-    console.log(password)
+    console.log(email);
+    console.log(password);
+    */ 
 
-    // If email not in database
-    model.emailExists(email)
-    .then(emailExists => {
-        if (!emailExists) {
+    try {
+        const user = await dbGet(`SELECT * FROM users WHERE email = ?`, email)
+        if (!user) {
             console.log("Email was not found in database");
             return res.status(404).send({authenticated: false, message: "An account with the email does not exist"});
-        } else {
-            console.log("Email found in db")
         }
-    })
-    .catch(error => {
-        console.error("Error checking email existence:", error);
-        return res.status(500).send({authenticated: false, message: "Internal Server Error"});
-    });
-
-    // Check if credentials are correct
-    model.correctCredentials(email, password)
-    .then(credentialsCorrect => {
+        const credentialsCorrect = await bcrypt.compare(password, user.password)
+        console.log(credentialsCorrect)
         if (!credentialsCorrect) {
             console.log("Invalid password");
             return res.status(401).send({authenticated: false, message: "Invalid email or password"});
-        } else {
-            console.log("Correct credentials!");
-
-            model.getUsernameFromEmail(email)
-            .then(username => {
-                model.addUser(req.session.id) // Add the client cookie as an identifier for the session
-                return res.status(201).send({authenticated: true, username: username, message: "Correct credentials!"})
-            })
         }
-    })
+
+        console.log("Correct credentials!");
+        model.addUser(user.user_id, user.username); // Add the client cookie as an identifier for the session
+        res.cookie("niceCookie", user.user_id)
+        return res.status(201).send({authenticated: true, username: user.username, message: "Correct credentials!"});
+    } catch (error) {
+        console.error("Error during user login:", error);
+        return res.status(500).send({authenticated: false, message: "Internal Server Error"});
+    }
 });
 
+// Middleware for validation
+const validateRegistration = (req, res, next) => {
+    const { password, confirmedPassword } = req.body;
+    if (password !== confirmedPassword) {
+        return res.status(400).send({ message: "Password and confirmed password do not match" });
+    }
+    next();
+};
 
 // API endpoint for User registration
-router.put("/user", async (req, res) => {
-    const { email, username, password, confirmedPassword } = req.body;
-    if (password !== confirmedPassword) {
-        return res.status(400).send({message: "Password and confirmed password do not match"});
-    }
-
+router.put("/user", validateRegistration, async (req, res) => {
+    const { email, username, password } = req.body;
+    console.log(email + username + password)
     try {
-        const checkEmailResult = await new Promise((resolve, reject) => {
-            const checkAvailableEmailStatement = `SELECT * FROM users WHERE email = ?`;
-            db.get(checkAvailableEmailStatement, email, (err, row) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(row);
-                }
-            });
-        });
-
-        if (checkEmailResult) {
-            console.log("Email is already in use");
-            return res.status(409).send({message: "Email is already in use"});
+        // Check if email or username is already taken
+        const userExists = await dbGet(`SELECT * FROM users WHERE email = ? OR username = ?`, [email, username]);
+        if (userExists) {
+            if (userExists.email === email) {
+                return res.status(409).send({ message: "Email is already in use" });
+            }
+            if (userExists.username === username) {
+                return res.status(409).send({ message: "Username is already taken" });
+            }
         }
 
-        const checkUsernameResult = await new Promise((resolve, reject) => {
-            const checkAvailableUsernameStatement = `SELECT * FROM users WHERE username = ?`;
-            db.get(checkAvailableUsernameStatement, username, (err, row) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(row);
-                }
-            });
-        });
-
-        if (checkUsernameResult) {
-            console.log("Username is taken");
-            return res.status(409).send({message: "Username is already taken"});
-        }
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
 
         // Create the new user
-        await new Promise((resolve, reject) => {
-            const createNewUserStatement = `INSERT INTO users (email, username, password) VALUES (?, ?, ?)`;
-            db.run(createNewUserStatement, [email, username, password], (err) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve();
-                }
-            });
-        });
+        const user_id = uuidv4();
+        await dbRun(`INSERT INTO users (user_id, email, username, password) VALUES (?, ?, ?, ?)`, [user_id, email, username, hashedPassword]);
 
         console.log("Registration successful!");
-        return res.status(201).send({message: "Registration successful!"});
-
+        res.status(201).send({ message: "Registration successful!" });
     } catch (error) {
         console.error(error);
-        return res.status(500).send({message: "Could not register user"});
+        res.status(500).send({ message: "Could not register user" });
     }
 });
 
 
 // API endpoints for User logout
 router.delete("/user", (req, res) => {
-    const { id } = req.session
-    console.log(id)
+    const id = req.cookies.niceCookie
     const user = model.findUserById(id)
-    console.log(user)
     if (user) {
         console.log("Found valid user when signing out.")
+        res.clearCookie('niceCookie')
         res.status(200).send({signedOut: true})
     }
     else res.status(405).send({signedOut: false}) // 405 Method Not Allowed returned if no user found with the id
