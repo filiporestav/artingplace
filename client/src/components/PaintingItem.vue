@@ -1,12 +1,12 @@
 <template>
     <div class="card" style="width: 18rem;">
         <div class="card-header">
-            {{title}} by <strong>{{ artist }}</strong>
+            {{name}} by <strong>{{ username }}</strong>
         </div>
         <div class="card-body">
-            <a href="/">
-                <img :src="imgName" class="card-img-top" alt="...">
-            </a>
+            <router-link :to="'/painting/' + id">
+            <img :src="getImageDataUrl()" alt="Featured image" class="card-img-top">
+            </router-link>
         </div>
         <div class="card-footer text-body-secondary">
             ${{ price }}
@@ -16,23 +16,24 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-
 const props = defineProps({
-    title: String,
+    id: String,
+    name: String,
+    username: String,
     likes: Number,
-    artist: String,
     price: Number,
-    imgName: String
+    featuredImage: ArrayBuffer
 })
 
-const title = ref(props.title)
-const likes = ref(props.likes)
-
-// retrieve images dynamically, source: https://skirtles-code.github.io/vue-examples/guides/working-with-image-assets
-const imgName = computed(() => {
-    return new URL(`../assets/${props.imgName}.jpg`, import.meta.url).href
-})
+const getImageDataUrl = () => {
+    if (props.featuredImage && props.featuredImage.data) {
+        const arrayBuffer = new Uint8Array(props.featuredImage.data); // Convert Buffer to Uint8Array
+        const blob = new Blob([arrayBuffer], { type: 'image/jpeg' }); // Create Blob
+        return URL.createObjectURL(blob); // Return URL
+    } else {
+        return ''; // or you can have a placeholder image URL here
+    }
+}
 
 </script>
 

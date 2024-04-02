@@ -18,7 +18,7 @@
           <label for="floatingPassword">Password</label>
         </div>
         <div class="form-floating">
-          <input v-model="confirmPassword" type="password" class="form-control" id="floatingConfirmPassword" placeholder="Confirm password" autocomplete="on">
+          <input v-model="confirmedPassword" type="password" class="form-control" id="floatingConfirmPassword" placeholder="Confirm password" autocomplete="on">
           <label for="floatingConfirmPassword">Confirm password</label>
         </div>
 
@@ -46,16 +46,27 @@
   const email = ref("")
   const username = ref("")
   const password = ref("")
-  const confirmPassword = ref("")
+  const confirmedPassword = ref("")
   const message = ref('')
   
   async function register() {
-    if (password.value === confirmPassword.value) {
-      const promise = UserService.register(email.value, username.value, password.value, confirmPassword.value)
-      promise.then(data => message.value = data.message)
-    }
-    else {
-      message.value = "Password and confirmed password must match"
+    try {
+      console.log(email.value, username.value, password.value, confirmedPassword.value)
+      const response = await fetch("/api/user", {
+            method: "PUT",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({email: email.value, username: username.value, password: password.value, confirmedPassword: confirmedPassword.value})
+        })
+
+        if (!response.ok) {
+            // Handle HTTP errors
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json(); // Await the parsing of the JSON
+        console.log(data);
+    } catch (err) {
+        console.error("Error during registration: ", err);
     }
   }
   

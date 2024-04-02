@@ -2,6 +2,7 @@ import express from "express";
 import session from 'express-session'
 import { createServer } from 'http'
 import user from './controllers/user.controller.js'
+import painting from './controllers/painting.controller.js'
 import { Server } from 'socket.io'
 import model from './model.js'
 import morgan from 'morgan'
@@ -9,7 +10,7 @@ import { resolvePath } from "./util.js"
 import betterLogging from 'better-logging'
 import db from './db.js'
 import helmet from 'helmet'
-import fileUpload from 'express-fileupload'
+import cookieParser from 'cookie-parser'
 
 const port = process.env.PORT || 8989;
 const app = express(); // Build an express server
@@ -43,11 +44,20 @@ const sessionMiddleware = session({
 // Setup middleware for express
 app.use(sessionMiddleware)
 
-// Enable Helmet Express middleware for security
-app.use(helmet())
+// Used to parse cookies
+app.use(cookieParser())
 
-// Package for handling file/image uploads (default options here)
-app.use(fileUpload())
+// Enable Helmet Express middleware for security
+app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+          "img-src": ["'self'", "blob:" ,"data:"], // Allow img-sources from BLOB urls
+        },
+      },
+    })
+  );
 
 // Share the session context from express with the Socket.IO server
 // read more here https://socket.io/how-to/use-with-express-session
@@ -66,12 +76,10 @@ app.use(express.urlencoded({extended: true}))
 
 // Bind REST controllers to /api/*
 app.use("/api", user.router)
+app.use("/api", painting.router)
 
 // Init the model with the socket instance
 model.init(io)
-
-// Setup or connect to db
-
 
 io.on("connection", (socket) => {
     console.log("Client connected to socket!")

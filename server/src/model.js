@@ -40,6 +40,25 @@ class Model {
     }
 
     /**
+     * Returns the ID of the user
+     * @param {String} username - The username (unique)
+     * @returns {String}
+     */
+    getIDfromUsername(username) {
+        return new Promise((resolve, reject) => {
+            const getStatement = `SELECT * FROM users WHERE username = ?`;
+            db.get(getStatement, username, (err, row) => {
+                if (err) {
+                    console.error(err.message);
+                    reject(err); // Reject the Promise if there's an error
+                } else {
+                    resolve(row ? row.user_id : undefined); // Resolve the Promise with the user_id or undefined
+                }
+            });
+        });
+    }
+
+    /**
      * Deletes a user from the model
      * @param {String} id - The id of the session (unique)
      * @returns {void}
@@ -99,18 +118,17 @@ class Model {
     /**
      * Checks if a user with a given email and password exists.
      * @param {String} email - The email of the account (unique)
-     * @param {String} password - The password (unhashed)
-     * @returns {Promise<Boolean>} - A Promise that resolves to true/false if an account exists with the email and password
+     * @returns {String} - The password (hashed) corresponding to the email address
      */
-    correctCredentials(email, password) {
+    getPassword(email) {
         return new Promise((resolve, reject) => {
-            const checkEmailAndPasswordStatement = `SELECT * FROM users WHERE email = ? AND password = ?`;
+            const checkEmailAndPasswordStatement = `SELECT * FROM users WHERE email = ?`;
             db.get(checkEmailAndPasswordStatement, [email, password], (err, row) => {
                 if (err) {
                     console.error(err);
                     reject(err);
                 } else {
-                    resolve(!!row); // Convert row to a boolean value
+                    resolve(row.password); // Return the password
                 }
             });
         });
