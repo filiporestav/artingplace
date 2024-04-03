@@ -1,33 +1,32 @@
-import sqlite3 from 'sqlite3'
-import { resolvePath } from './util.js'
-import { promisify } from 'util'
+import sqlite3 from "sqlite3";
+import { promisify } from "util";
+import { resolvePath } from "./util.js";
 
-sqlite3.verbose() // Enable debug mode
-const filepath = resolvePath("server/src/data.sqlite")
+sqlite3.verbose(); // Enable debug mode
+const filepath = resolvePath("server/src/data.sqlite");
 
 const db = new sqlite3.Database(filepath, sqlite3.OPEN_READWRITE, (err) => {
-    if (err) {
-        console.error(err.message)
-    }
-    else {
-        console.log('Connected to the datasbase')
-    }
-})
+  if (err) {
+    console.error(err.message);
+  } else {
+    console.log("Connected to the datasbase");
+  }
+});
 
 // Used to promisify db queries
-const dbGet = promisify(db.get.bind(db))
-const dbRun = promisify(db.run.bind(db))
+// const dbGet = promisify(db.get.bind(db));
+const dbRun = promisify(db.run.bind(db));
 
 // Function to reset the database tables
 async function resetTables() {
-    const delUserTable = `DROP TABLE IF EXISTS users`
-    await dbRun(delUserTable)
-    const delPaintingsTable = `DROP TABLE IF EXISTS paintings`
-    await dbRun(delPaintingsTable)
-    const delImagesTable = `DROP TABLE IF EXISTS images`
-    await dbRun(delImagesTable)
-    const delLikesTable = `DROP TABLE IF EXISTS user_likes`
-    await dbRun(delLikesTable)
+  const delUserTable = `DROP TABLE IF EXISTS users`;
+  await dbRun(delUserTable);
+  const delPaintingsTable = `DROP TABLE IF EXISTS paintings`;
+  await dbRun(delPaintingsTable);
+  const delImagesTable = `DROP TABLE IF EXISTS images`;
+  await dbRun(delImagesTable);
+  const delLikesTable = `DROP TABLE IF EXISTS user_likes`;
+  await dbRun(delLikesTable);
 }
 
 // await resetTables()
@@ -44,9 +43,9 @@ CREATE TABLE IF NOT EXISTS users (
     username TEXT UNIQUE,
     password TEXT NOT NULL,
     avatar BLOB
-)`
+)`;
 
-await dbRun(createUserTable)
+await dbRun(createUserTable);
 
 // the "many" side
 const createPaintingsTable = `
@@ -59,9 +58,9 @@ CREATE TABLE IF NOT EXISTS paintings (
     featured_image_id INTEGER,
     FOREIGN KEY (user_id) REFERENCES users (user_id),
     FOREIGN KEY (featured_image_id) REFERENCES images (image_id)
-)`
+)`;
 
-await dbRun(createPaintingsTable)
+await dbRun(createPaintingsTable);
 
 // Create junction table to store likes
 const createLikesTable = `
@@ -71,9 +70,9 @@ CREATE TABLE IF NOT EXISTS user_likes (
     PRIMARY KEY (user_id, painting_id),
     FOREIGN KEY (user_id) REFERENCES users (user_id),
     FOREIGN KEY (painting_id) REFERENCES paintings (painting_id)
-);`
+);`;
 
-await dbRun(createLikesTable)
+await dbRun(createLikesTable);
 
 const createImagesTable = `
 CREATE TABLE IF NOT EXISTS images (
@@ -81,8 +80,8 @@ CREATE TABLE IF NOT EXISTS images (
     data BLOB,
     painting_id INTEGER NOT NULL,
     FOREIGN KEY (painting_id) REFERENCES paintings (painting_id)
-)`
+)`;
 
-await dbRun(createImagesTable)
+await dbRun(createImagesTable);
 
-export default db
+export default db;

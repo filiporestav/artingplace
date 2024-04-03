@@ -3,17 +3,30 @@
     <div v-if="painting">
       <h1>{{ painting.name }}</h1>
       <!-- Display all images from imageUrls -->
-      <img v-for="(url, index) in imageUrls" 
-        :src="url" 
-        :alt="`Image ${index} of ${painting.name}`" 
-        class="painting-image" 
-        :key="index">
+      <img
+        v-for="(url, index) in imageUrls"
+        :key="index"
+        :src="url"
+        :alt="`Image ${index} of ${painting.name}`"
+        class="painting-image"
+      />
       <p>{{ painting.description }}</p>
-      <p><strong>Seller: {{ painting.username }}</strong></p>
-      <p><strong>Email to seller: <a :href="`mailto:${painting.email}`">{{ painting.email }}</a></strong></p>
-      <p><strong>Price: ${{ painting.price }}</strong></p>
-      <p><strong>Likes: {{ painting.likes }}</strong></p>
-      <button @click="addToCart">Add to Cart</button>
+      <p>
+        <strong>Seller: {{ painting.username }}</strong>
+      </p>
+      <p>
+        <strong
+          >Email to seller:
+          <a :href="`mailto:${painting.email}`">{{ painting.email }}</a></strong
+        >
+      </p>
+      <p>
+        <strong>Price: ${{ painting.price }}</strong>
+      </p>
+      <p>
+        <strong>Likes: {{ painting.likes }}</strong>
+      </p>
+      <button type="button" @click="addToCart">Add to Cart</button>
     </div>
     <div v-else>
       <p>Loading...</p>
@@ -33,35 +46,41 @@ export default {
   created() {
     this.paintingId = this.$route.params.paintingId;
     Promise.all([
-      fetch(`/api/painting/${this.paintingId}`).then(response => {
+      fetch(`/api/painting/${this.paintingId}`).then((response) => {
         if (!response.ok) {
-          throw new Error(`Failed to fetch painting data: ${response.statusText}`);
+          throw new Error(
+            `Failed to fetch painting data: ${response.statusText}`
+          );
         }
         return response.json();
       }),
-      fetch(`/api/painting/images/${this.paintingId}`).then(response => {
+      fetch(`/api/painting/images/${this.paintingId}`).then((response) => {
         if (!response.ok) {
-          throw new Error(`Failed to fetch painting images: ${response.statusText}`);
+          throw new Error(
+            `Failed to fetch painting images: ${response.statusText}`
+          );
         }
         return response.blob(); // Parse the response as Blob
+      }),
+    ])
+      .then(([paintingData, imagesBlob]) => {
+        this.painting = paintingData;
+        this.processBlob(imagesBlob); // Process the blob data
       })
-    ]).then(([paintingData, imagesBlob]) => {
-      this.painting = paintingData;
-      this.processBlob(imagesBlob); // Process the blob data
-    }).catch(error => {
-      console.error("Error fetching painting data and images:", error);
-    });
-},
-methods: {
+      .catch((error) => {
+        console.error("Error fetching painting data and images:", error);
+      });
+  },
+  methods: {
     processBlob(blob) {
-        const reader = new FileReader();
-        reader.onload = () => {
-            this.imageUrls.push(reader.result); // Add the result to imageUrls directly
-        };
-        reader.readAsDataURL(blob); // Read the blob data as a data URL
-    }
-}
-}
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imageUrls.push(reader.result); // Add the result to imageUrls directly
+      };
+      reader.readAsDataURL(blob); // Read the blob data as a data URL
+    },
+  },
+};
 </script>
 
 <style scoped>

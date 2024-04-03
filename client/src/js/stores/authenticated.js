@@ -1,18 +1,24 @@
-import { defineStore } from 'pinia'
+import { defineStore } from "pinia";
 
-export const userDataStore = defineStore('userDataStore', {
-    // State properties
-    state: () => ({
-        authenticated: false,
-        username: null,
-        cookie: null,
-    }),
-    actions: {
-        login() {
-            this.authenticated = true
-        },
-        logout() {
-            this.authenticated = false
-        }
-    }
-})
+const userDataStore = defineStore("userDataStore", {
+  // State properties
+  state: () => ({
+    authenticated: false,
+    username: undefined,
+    cookie: undefined,
+  }),
+  actions: {
+    login(username, cookie) {
+      this.authenticated = true;
+      this.username = username;
+      this.cookie = cookie;
+    },
+    logout() {
+      this.authenticated = false;
+      this.username = undefined;
+      this.cookie = undefined;
+    },
+  },
+});
+
+export default userDataStore;
