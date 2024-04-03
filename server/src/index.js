@@ -11,6 +11,8 @@ import betterLogging from 'better-logging'
 import db from './db.js'
 import helmet from 'helmet'
 import cookieParser from 'cookie-parser'
+import expressSession from 'express-session'
+import socketIOSession from 'express-socket.io-session'
 
 const port = process.env.PORT || 8989;
 const app = express(); // Build an express server
@@ -63,6 +65,22 @@ app.use(
 // read more here https://socket.io/how-to/use-with-express-session
 io.engine.use(sessionMiddleware)
 
+// Configure session management
+const sessionConf = expressSession({
+  secret: "Super secret! Shh! Do not tell anyone...",
+  resave: true,
+  saveUninitialized: true,
+});
+
+app.use(sessionConf);
+io.use(
+  socketIOSession(sessionConf, {
+    autoSave: true,
+    saveUninitialized: true,
+  })
+);
+
+
 // Logger
 app.use(morgan('combined'))
 
@@ -83,9 +101,15 @@ model.init(io)
 
 io.on("connection", (socket) => {
     console.log("Client connected to socket!")
+    socket.emit("connection", "Client connected to socket!")
 
     socket.on("disconnect", () => {
         console.log("Client disconnected from socket!")
+    })
+
+    // Client emits that a painting has been changed, server listens and emits the new paintings to all clients
+    socket.on("paintingsChanged", (paintings) => {
+      io.emit("updatePaintingList", paintings)
     })
 })
 

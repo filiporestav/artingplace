@@ -5,15 +5,45 @@
   </div>
 </template>
 
-<script setup>
+<script>
+import { io } from 'socket.io-client';
 import NavBar from './components/NavBar.vue'
-import io from 'socket.io-client'
+// import { userDataStore } from './js/stores/authenticated';
+import { paintingStore } from './js/stores/paintings'
+import { mapActions } from 'pinia'
 
-const socket = io().connect()
+export default {
+  name: 'Artingplace',
+  components: {NavBar},
+  data: () => ({
+    socket: io.connect()
+  }),
+  mounted() {
+    // Initialize the paintings list inside browser store
+    this.fetchPaintings()
 
-socket.emit("connection", () => {
-  console.log("Client socket connected")
-})
+    this.socket.on("updatePaintingList", (paintings) => { 
+      this.updatePaintings(paintings) 
+      console.log("Updated paintings");
+    });
+
+  },
+  methods: {
+    ...mapActions(paintingStore, ['updatePaintings']),
+
+    fetchPaintings() {
+      fetch("/api/paintings", {
+        method: "GET",
+      })
+      .then(response => response.ok ? response.json() : Promise.reject("Failed to fetch paintings"))
+      .then(data => {
+        // this.paintings = data;
+        this.updatePaintings(data)
+      })
+      .catch(err => console.error(err));
+    },
+  }
+}
 
 </script>
 
