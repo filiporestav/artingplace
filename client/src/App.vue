@@ -6,45 +6,46 @@
 </template>
 
 <script>
-import { io } from 'socket.io-client';
-import NavBar from './components/NavBar.vue'
-// import { userDataStore } from './js/stores/authenticated';
-import { paintingStore } from './js/stores/paintings'
-import { mapActions } from 'pinia'
+import { io } from "socket.io-client";
+import { mapActions } from "pinia";
+import NavBar from "./components/NavBar.vue";
+import paintingStore from "./js/stores/paintings";
 
 export default {
-  name: 'Artingplace',
-  components: {NavBar},
+  name: "ArtingPlace",
+  components: { NavBar },
   data: () => ({
-    socket: io.connect()
+    socket: io.connect(),
   }),
   mounted() {
     // Initialize the paintings list inside browser store
-    this.fetchPaintings()
+    this.fetchPaintings();
 
-    this.socket.on("updatePaintingList", (paintings) => { 
-      this.updatePaintings(paintings) 
+    this.socket.on("updatePaintingList", (paintings) => {
+      this.updatePaintings(paintings);
       console.log("Updated paintings");
     });
-
   },
   methods: {
-    ...mapActions(paintingStore, ['updatePaintings']),
+    ...mapActions(paintingStore, ["updatePaintings"]),
 
     fetchPaintings() {
       fetch("/api/paintings", {
         method: "GET",
       })
-      .then(response => response.ok ? response.json() : Promise.reject("Failed to fetch paintings"))
-      .then(data => {
-        // this.paintings = data;
-        this.updatePaintings(data)
-      })
-      .catch(err => console.error(err));
+        .then((response) =>
+          response.ok
+            ? response.json()
+            : Promise.reject(new Error("Failed to fetch paintings"))
+        )
+        .then((data) => {
+          // this.paintings = data;
+          this.updatePaintings(data);
+        })
+        .catch((err) => console.error(err));
     },
-  }
-}
-
+  },
+};
 </script>
 
 <style scoped>
