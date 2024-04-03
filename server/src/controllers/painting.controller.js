@@ -45,7 +45,7 @@ router.post('/painting', upload.array('images', 5), async (req, res) => {
         await dbRun('INSERT INTO paintings (painting_id, name, price, user_id, featured_image_id) VALUES (?, ?, ?, ?, ?)',
                      [paintingId, painting_name, painting_price, user_id, featured_image_id]);
 
-        res.send('Painting and images uploaded successfully');
+        res.status(200).send("Painting upload successful")
     } catch (error) {
         console.error('Error uploading painting:', error);
         res.status(500).send('Error uploading painting');

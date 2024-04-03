@@ -1,10 +1,10 @@
 <template>
   <div>
       <h1>Paintings</h1>
-      <h2 v-if="userStore.authenticated">{{ userStore.username }}, here you can find {{ paintings.length }} artworks!</h2>
+      <h2 v-if="authenticated">{{ username }}, here you can find {{ paintings.length }} artworks!</h2>
       <h2 v-else>Here you can find some really inspiring artwork! Browse through {{ paintings.length }} fantastic paintings.</h2>
       <div class="paintings-container">
-          <PaintingItem
+          <PaintingItem @like="updateLikes"
             v-for="(painting, index) in paintings"
             :key="index"
             :id="painting.painting_id"
@@ -18,32 +18,56 @@
   </div>
 </template>
 
-<script setup>
+<script>
 import PaintingItem from './PaintingItem.vue'
 import { userDataStore } from '../js/stores/authenticated';
-import { ref, onMounted } from 'vue';
+import { paintingStore } from '../js/stores/paintings'
+import { mapState, mapActions } from 'pinia'
 
-const userStore = userDataStore()
+export default {
+  components: {
+    PaintingItem,
+  },
+  computed: {
+    ...mapState(paintingStore, {
+      paintings: 'paintings'
+    }),
+    ...mapState(userDataStore, {
+      username: 'username',
+      authenticated: 'authenticated'
+    })
+  },
+  methods: {
+    ...mapActions(paintingStore, ['changeLikes']),
+    // Like the painting
+    async updateLikes(paintingId) {
+        console.log(this.authenticated);
+        if (!this.authenticated) {
+            console.log("You must sign in to like a painting");
+        } else {
+            try {
+                const response = await fetch(`/api/like/${paintingId}`, {
+                    method: 'POST',
+                });
+                if (!response.ok) {
+                    const errorMessage = await response.text();
+                    console.error("Failed to like the painting:", errorMessage);
+                } else {
+                    const data = await response.json();
+                    console.log(data)
+                    this.changeLikes(paintingId, data.likes) // Update the likes
 
-const paintings = ref([])
-
-onMounted(() => {
-  fetch("/api/paintings", {
-    method: "GET",
-  })
-  .then(response => {
-    if (response.ok) {
-      return response.json()
-    }
-    else throw new Error("Error from GET request from paintings")
-  })
-  .then(data => {
-    paintings.value = data // Update the paintings array with our fetched data
-  })
-  .catch(err => {
-    console.error(err)
-  })
-})
+                    const { socket } = this.$root
+                    console.log(this.paintings)
+                    socket.emit("paintingsChanged", this.paintings)
+                }
+            } catch (error) {
+                console.error("Failed to like the painting", error);
+            }
+        }
+  }
+  }
+}
 
 </script>
 

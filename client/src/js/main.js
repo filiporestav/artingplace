@@ -7,8 +7,8 @@ import 'bootstrap/dist/css/bootstrap.css' // For css
 import 'bootstrap-icons/font/bootstrap-icons.css' // For icons
 import bootstrap from 'bootstrap/dist/js/bootstrap.bundle.js' // For js
 
-const pinia = createPinia() // Used for state management
 const app = createApp(App)
+const pinia = createPinia() // Used for state management
 app.use(router)
 app.use(pinia)
 app.use(bootstrap)
