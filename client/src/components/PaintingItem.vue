@@ -9,7 +9,7 @@
     <div class="card-body">
       <router-link :to="'/painting/' + id">
         <img
-          :src="getImageDataUrl()"
+          :src="imageUrl"
           alt="Featured image"
           class="card-img-top"
         />
@@ -35,17 +35,8 @@ const props = defineProps({
   username: { type: String, required: true },
   likes: { type: String, required: true },
   price: { type: String, required: true },
-  featuredImage: { type: ArrayBuffer, required: true },
+  imageUrl: { type: String, required: true},
 });
-
-const getImageDataUrl = () => {
-  if (props.featuredImage && props.featuredImage.data) {
-    const arrayBuffer = new Uint8Array(props.featuredImage.data); // Convert Buffer to Uint8Array
-    const blob = new Blob([arrayBuffer], { type: "image/jpeg" }); // Create Blob
-    return URL.createObjectURL(blob); // Return URL
-  }
-  return "";
-};
 
 function handleLike() {
   emit("like", props.id);

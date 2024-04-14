@@ -15,7 +15,7 @@
         :key="index"
         :name="painting.name"
         :username="painting.username"
-        :featured-image="painting.featuredImageData"
+        :image-url="`/api/image/${painting.painting_id}`"
         :likes="painting.likes"
         :price="painting.price"
         @like="updateLikes"

@@ -2,9 +2,8 @@
   <div class="painting-page">
     <div v-if="painting">
       <h1>{{ painting.name }}</h1>
-      <!-- Display all images from imageUrls -->
       <img
-        :src="imageUrl"
+        :src="`/api/image/${paintingId}`"
         :alt="`Image of ${painting.name}`"
         class="painting-image"
       />
@@ -38,7 +37,6 @@ export default {
       paintingId: null,
       painting: null,
       owner: null,
-      imageUrl: null, // Store image URL here
     };
   },
   created() {
@@ -55,13 +53,10 @@ export default {
     .then(async (data) => {
       this.painting = data.painting;
       this.owner = data.owner;
-
-      const imageUrl = await fetch(`/api/images/${this.paintingId}`)
-      this.imageUrl = imageUrl
-    })
-    .catch((error) => {
-        console.error("Error fetching painting data and images:", error);
-      });
+      })
+      .catch((error) => {
+          console.error("Error fetching painting data", error);
+        });
   },
 };
 </script>

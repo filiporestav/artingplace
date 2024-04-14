@@ -27,7 +27,7 @@ async function resetTables() {
   await dbRun(delLikesTable);
 }
 
-await resetTables()
+// await resetTables()
 
 // We have a one-to-many relationship
 // One user can have multiple paintings, but one painting can only have one artist

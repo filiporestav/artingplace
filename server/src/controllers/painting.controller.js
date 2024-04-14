@@ -61,13 +61,18 @@ router.get("/myPaintings", requireAuth, async (req, res) => {
   }
 });
 
-router.get("/images/:paintingId", async (req, res) => {
-  const { paintingId } = req.params
-  const imageData = await Painting.getImageData(paintingId)
+// Get image from the painting id, return it in Blob format
+router.get("/image/:paintingId", async (req, res) => {
+  const { paintingId } = req.params;
+  const imageData = await Painting.getImageData(paintingId);
 
-  res.setHeader("Content-Type", "image/jpeg")
-  res.send(imageData)
-})
+  if (!imageData || !imageData.image) {
+    return res.status(404).send('Image not found');
+  }
+
+  res.setHeader('Content-Type', 'image/jpeg');
+  return res.send(imageData.image);
+});
 
 // Get the painting info
 router.get("/painting/:paintingId", async (req, res) => {
