@@ -7,6 +7,7 @@ import socketIOSession from "express-socket.io-session";
 import { Server } from "socket.io";
 import morgan from "morgan";
 import betterLogging from "better-logging";
+import history from 'connect-history-api-fallback'
 
 import user from "./controllers/user.controller.js";
 import painting from "./controllers/painting.controller.js";
@@ -34,6 +35,11 @@ app.use(
     body: { show: true },
   }),
 );
+
+// Used to fix 404 - Not Found when going to direct url
+app.use(history({
+  htmlAcceptHeaders: ['text/html', 'application/xhtml+xml']
+}))
 
 // Configure session management
 const sessionConf = expressSession({
@@ -91,6 +97,24 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("Client disconnected from socket!");
   });
+
+  // Express socket io session
+  socket.on("login", (userData) => {
+    const skt = socket
+    skt.handshake.session.user = userData
+    skt.handshake.session.save()
+    console.log("Session saved in socket")
+  })
+
+  // Delete socket io session
+  socket.on("logout", () => {
+    const skt = socket
+    if (skt.handshake.session.user) {
+      delete skt.handshake.session.user
+      skt.handshake.session.save()
+      console.log("Session deleted in socket")
+    }
+  })
 
   // Client emits that a painting has been changed, server listens and emits the new paintings to all clients
   socket.on("paintingsChanged", (paintings) => {

@@ -2,7 +2,6 @@ import { defineStore } from "pinia";
 
 const paintingStore = defineStore("paintingStore", {
   state: () => ({
-    /** @type {{ painting_id: string,  }} */
     paintings: [],
   }),
   actions: {

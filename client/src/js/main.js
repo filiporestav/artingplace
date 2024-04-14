@@ -9,7 +9,7 @@ import "bootstrap-icons/font/bootstrap-icons.css"; // For icons
 
 const app = createApp(App);
 const pinia = createPinia(); // Used for state management
-app.use(router);
 app.use(pinia);
+app.use(router); // Setup pinia before router, as we use pinia in our router
 app.use(bootstrap);
 app.mount("#app");

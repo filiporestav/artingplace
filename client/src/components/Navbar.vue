@@ -64,11 +64,6 @@
               >
             </li>
             <li>
-              <router-link to="/settings" class="dropdown-item"
-                >Settings</router-link
-              >
-            </li>
-            <li>
               <router-link to="/profile" class="dropdown-item"
                 >Profile</router-link
               >
@@ -130,6 +125,7 @@ function logout() {
   }).then((response) => {
     if (response.ok) {
       store.logout();
+      store.session.emit("logout") // Delete session from backend
     }
   });
 }

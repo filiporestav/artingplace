@@ -1,8 +1,8 @@
 <template>
   <div>
-    <h1>Paintings</h1>
+    <h1>{{ userStore.username }}'s paintings</h1>
     <h2>
-      {{ userStore.username }}, you have {{ myPaintings.length }} listed
+      You have {{ myPaintings.length }} listed
       artworks on Artingplace.
     </h2>
     <div class="paintings-container">

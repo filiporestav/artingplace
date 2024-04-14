@@ -23,13 +23,11 @@ async function resetTables() {
   await dbRun(delUserTable);
   const delPaintingsTable = `DROP TABLE IF EXISTS paintings`;
   await dbRun(delPaintingsTable);
-  const delImagesTable = `DROP TABLE IF EXISTS images`;
-  await dbRun(delImagesTable);
   const delLikesTable = `DROP TABLE IF EXISTS user_likes`;
   await dbRun(delLikesTable);
 }
 
-// await resetTables()
+await resetTables()
 
 // We have a one-to-many relationship
 // One user can have multiple paintings, but one painting can only have one artist
@@ -38,11 +36,12 @@ async function resetTables() {
 // the "one" side
 const createUserTable = `
 CREATE TABLE IF NOT EXISTS users (
-    user_id TEXT UNIQUE PRIMARY KEY,
+    user_id TEXT UNIQUE NOT NULL,
     email TEXT UNIQUE,
     username TEXT UNIQUE,
     password TEXT NOT NULL,
-    avatar BLOB
+    avatar BLOB,
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP
 )`;
 
 await dbRun(createUserTable);
@@ -55,9 +54,8 @@ CREATE TABLE IF NOT EXISTS paintings (
     price INTEGER NOT NULL,
     likes INTEGER DEFAULT 0,
     user_id TEXT NOT NULL,
-    featured_image_id INTEGER,
-    FOREIGN KEY (user_id) REFERENCES users (user_id),
-    FOREIGN KEY (featured_image_id) REFERENCES images (image_id)
+    image BLOB,
+    FOREIGN KEY (user_id) REFERENCES users (user_id)
 )`;
 
 await dbRun(createPaintingsTable);
@@ -73,15 +71,5 @@ CREATE TABLE IF NOT EXISTS user_likes (
 );`;
 
 await dbRun(createLikesTable);
-
-const createImagesTable = `
-CREATE TABLE IF NOT EXISTS images (
-    image_id TEXT UNIQUE PRIMARY KEY,
-    data BLOB,
-    painting_id INTEGER NOT NULL,
-    FOREIGN KEY (painting_id) REFERENCES paintings (painting_id)
-)`;
-
-await dbRun(createImagesTable);
 
 export default db;
