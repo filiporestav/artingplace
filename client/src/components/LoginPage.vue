@@ -58,7 +58,7 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import userDataStore from "../js/stores/authenticated";
 
-const store = userDataStore();
+const userStore = userDataStore();
 const router = useRouter();
 
 const email = ref("");
@@ -69,26 +69,30 @@ function login() {
   fetch("/api/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email: email.value, password: password.value }),
   })
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
+    .then(async (res) => {
+      if (res.ok) {
+        const data = await res.json()
+        message.value = data.message
+        // Create express socket io session
+        userStore.socket.emit("login", [data.username, data.cookie])
+        userStore.login(data.username, data.cookie);
+        // Redirect to paintings page if successfully logged in
+        console.log(userStore.authenticated)
+        if (userStore.authenticated) {
+          router.push("/paintings");
+        }
       }
-      return response.text();
-    })
-    .then((data) => {
-      store.login(data.username, data.cookie);
-      message.value = data.message;
-
-      // Redirect to paintings page if successfully logged in
-      if (store.authenticated) {
-        router.push("/paintings");
+      else {
+        const errMsg = await res.json()
+        message.value = errMsg.message
+        throw Error("Error signing in")
       }
     })
-    .catch((err) => {
-      console.error(err);
-    });
+    .catch(error => {
+      console.error(error)
+    })
 }
 </script>
 

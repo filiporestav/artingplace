@@ -91,7 +91,7 @@ const confirmedPassword = ref("");
 const message = ref("");
 
 async function register() {
-  try {
+
     if (password.value !== confirmedPassword.value) {
       message.value = "Password and confirmed password do not match.";
       return; // Exit early if passwords don't match
@@ -105,35 +105,28 @@ async function register() {
     };
 
     // Register user
-    const registerResponse = await fetch("/api/user", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(userData),
-    });
-
-    if (!registerResponse.ok) {
-      message.value = await registerResponse.text();
-      throw new Error("Failed to register user");
-    }
-
-    // Login user after successful registration
-    const loginResponse = await fetch("/api/user", {
+    fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email.value, password: password.value }),
+      body: JSON.stringify(userData),
+    })
+    .then((response) => response.json().then(data => ({ data, ok: response.ok })))
+    .then(({ data, ok }) => {
+      message.value = data.message; // Set message regardless of response status
+      if (ok) {
+        const userId = data.cookie;
+        store.login(username, userId);
+        store.socket.emit("login", [username, data.cookie]);
+        router.push("/admin");
+      } else {
+        throw new Error("Error registering user");
+      }
+    })
+    .catch((error) => {
+      // Catch any errors during the fetch or processing
+      message.value = error.message; // Display error message
     });
 
-    if (loginResponse.ok) {
-      const responseData = await loginResponse.json();
-      console.log("You successfully logged in");
-      store.login(responseData.username, responseData.cookie);
-      router.push("/paintings");
-    } else {
-      throw new Error("Failed to log in after registration");
-    }
-  } catch (err) {
-    console.error("Error during registration: ", err);
-  }
 }
 </script>
 

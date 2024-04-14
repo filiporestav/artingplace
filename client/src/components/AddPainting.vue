@@ -24,10 +24,9 @@
         </label>
         <label for="image">
           <input
-            ref="imageInput"
+            name="image"
             type="file"
             class="form-control-file"
-            multiple
             accept="image/*"
             required
             @change="handleFileChange"
@@ -54,27 +53,25 @@ export default {
     return {
       paintingName: "",
       paintingPrice: "",
-      images: [],
-      socket: undefined,
+      image: null,
     };
   },
   methods: {
     ...mapActions(paintingStore, ["updatePaintings"]),
 
     handleFileChange(event) {
-      // Store selected files
-      this.images = event.target.files;
+      // Store selected file
+      if (event.target.files.length > 0) {
+        this.image = event.target.files[0];
+      }
     },
     async uploadPainting() {
-      const { socket } = this.$root;
       // Create FormData object
       const formData = new FormData();
-      formData.append("painting_name", this.paintingName);
-      formData.append("painting_price", this.paintingPrice);
-
-      // Append each selected image to the FormData
-      for (let i = 0; i < this.images.length; i += 1) {
-        formData.append("images", this.images[i]);
+      formData.append("paintingName", this.paintingName);
+      formData.append("paintingPrice", this.paintingPrice);
+      if (this.image) {
+        formData.append("image", this.image);
       }
 
       try {
@@ -82,28 +79,20 @@ export default {
         await fetch("/api/painting", {
           method: "POST",
           body: formData,
-        }).then(async (postResponse) => {
-          if (postResponse.ok) {
-            await fetch("/api/paintings")
-              .then((getResponse) => {
-                if (getResponse.ok) {
-                  return getResponse.json();
-                }
-                throw new Error("Error sending painting to server");
-              })
-              .then((paintings) => {
-                console.log(paintings);
-                socket.emit("paintingsChanged", paintings); // Emit changes
-
-                // Reset form fields
-                this.paintingName = "";
-                this.paintingPrice = "";
-                this.images = [];
-              });
-          }
-        });
+        }).then(response => response.json())
+          .then(data => {
+            console.log('Success:', data);
+            // Optionally fetch and update local store or emit event
+            // Reset form fields
+            this.paintingName = "";
+            this.paintingPrice = "";
+            this.image = null;
+          })
+          .catch(error => {
+            console.error('Error:', error);
+          });
       } catch (error) {
-        console.error(error);
+        console.error('Fetch Error:', error);
       }
     },
   },

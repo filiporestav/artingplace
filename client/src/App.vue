@@ -10,6 +10,7 @@ import { io } from "socket.io-client";
 import { mapActions } from "pinia";
 import NavBar from "./components/NavBar.vue";
 import paintingStore from "./js/stores/paintings";
+import userDataStore from "./js/stores/authenticated";
 
 export default {
   name: "ArtingPlace",
@@ -21,6 +22,8 @@ export default {
     // Initialize the paintings list inside browser store
     this.fetchPaintings();
 
+    this.initSocket(this.socket) // Save the socket instance in Pinia store
+
     this.socket.on("updatePaintingList", (paintings) => {
       this.updatePaintings(paintings);
       console.log("Updated paintings");
@@ -28,6 +31,7 @@ export default {
   },
   methods: {
     ...mapActions(paintingStore, ["updatePaintings"]),
+    ...mapActions(userDataStore, ["initSocket"]),
 
     fetchPaintings() {
       fetch("/api/paintings", {
@@ -39,7 +43,6 @@ export default {
             : Promise.reject(new Error("Failed to fetch paintings"))
         )
         .then((data) => {
-          // this.paintings = data;
           this.updatePaintings(data);
         })
         .catch((err) => console.error(err));
