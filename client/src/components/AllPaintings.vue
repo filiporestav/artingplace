@@ -55,17 +55,13 @@ export default {
           const response = await fetch(`/api/like/${paintingId}`, {
             method: "POST",
           });
+          const message = await response.text();
           if (!response.ok) {
-            const errorMessage = await response.text();
-            console.error("Failed to like the painting:", errorMessage);
+            console.error("Failed to like the painting:", message);
           } else {
-            const data = await response.json();
-            console.log(data);
-            this.changeLikes(paintingId, data.likes); // Update the likes
-
-            const { socket } = this.$root;
-            console.log(this.paintings);
-            socket.emit("paintingsChanged", this.paintings);
+            console.log(message)
+            const userstore = userDataStore()
+            userstore.socket.emit("paintingsChanged");
           }
         } catch (error) {
           console.error("Failed to like the painting", error);

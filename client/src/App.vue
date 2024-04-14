@@ -19,15 +19,24 @@ export default {
     socket: io.connect(),
   }),
   mounted() {
+    const userStore = userDataStore()
     // Initialize the paintings list inside browser store
     this.fetchPaintings();
 
     this.initSocket(this.socket) // Save the socket instance in Pinia store
 
+    this.addEventListeners()
+
     this.socket.on("updatePaintingList", (paintings) => {
       this.updatePaintings(paintings);
       console.log("Updated paintings");
     });
+
+    this.socket.on("loggedOut", () => {
+      userStore.logout()
+      console.log("Logged out due to inactivity")
+      this.$router.push("/login")
+    })
   },
   methods: {
     ...mapActions(paintingStore, ["updatePaintings"]),
@@ -47,6 +56,15 @@ export default {
         })
         .catch((err) => console.error(err));
     },
+    addEventListeners() {
+      document.addEventListener("mousemove", this.resetTimer)
+      document.addEventListener("click", this.resetTimer)
+      document.addEventListener("scroll", this.resetTimer)
+    },
+    resetTimer() {
+      const userStore = userDataStore()
+      userStore.socket.emit("activity")
+    }
   },
 };
 </script>

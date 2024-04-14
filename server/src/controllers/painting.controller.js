@@ -1,16 +1,10 @@
 import { Router } from "express";
 import multer from "multer";
-import { promisify } from "util";
-import { v4 as uuidv4 } from "uuid";
-import db from "../db.js";
 import Painting from "../models/painting.model.js"
 import User from "../models/user.model.js"
 
 const router = Router();
 const upload = multer();
-const dbGet = promisify(db.get.bind(db));
-const dbRun = promisify(db.run.bind(db));
-const dbAll = promisify(db.all.bind(db));
 
 /**
  * requireAuth is a middleware function.
@@ -25,20 +19,19 @@ const requireAuth = (req, res, next) => {
   }
   else {
     res.status(403).send()
-    // next("/login") // If trying to access admin endpoint without being admin, redirect to login
   }
 };
 
 // Endpoint to upload a painting and its image
 router.post("/painting", requireAuth, upload.single("image"), async (req, res) => {
   const { paintingName, paintingPrice } = req.body;
-  const image = req.file;
+  const image = req.file.buffer;
   const userId = req.cookies.niceCookie;
 
   try {
     const painting = new Painting(paintingName, paintingPrice, image, userId);
     await painting.save();
-    res.status(200).send("Painting uploaded successfully");
+    res.status(200).send({ painting, message: "Painting uploaded successfully"});
   } catch (error) {
     console.error("Error uploading painting:", error);
     res.status(500).send("Error uploading painting");
@@ -47,7 +40,7 @@ router.post("/painting", requireAuth, upload.single("image"), async (req, res) =
 
 router.get("/paintings", async (req, res) => {
   try {
-    const paintings = await Painting.getAllPaintingsWithDetails();
+    const paintings = await Painting.getPaintings()
     res.status(200).json(paintings);
   } catch (error) {
     console.error("Error fetching paintings:", error);
@@ -68,36 +61,36 @@ router.get("/myPaintings", requireAuth, async (req, res) => {
   }
 });
 
-// Get the contact info (from user table) from a specific painting ID
+router.get("/images/:paintingId", async (req, res) => {
+  const { paintingId } = req.params
+  const imageData = await Painting.getImageData(paintingId)
+
+  res.setHeader("Content-Type", "image/jpeg")
+  res.send(imageData)
+})
+
+// Get the painting info
 router.get("/painting/:paintingId", async (req, res) => {
   const { paintingId } = req.params;
-  const painting = Painting.findById(paintingId)
+  const painting = await Painting.findById(paintingId)
+  // console.log("Painting:", painting)
+  const owner = await User.findByUserId(painting.user_id)
+  console.log("User:", owner)
 
   if (!painting) {
     res.status(404).send(`Painting with painting ID ${paintingId} not found`)
   }
-  const user = User.findById(painting.userId)
-
-  if (!user) {
-    res.status(404).send(`User with user ID ${user.userId} not found`)
-  }
-  res.status(200).json({ painting })
-});
-
-// Get all the images for a specific painting ID
-router.get("/painting/images/:paintingId", async (req, res) => {
-  const { paintingId } = req.params;
-  await Painting.getImagesByPaintingId(paintingId, res);
+  res.status(200).json({ painting, owner })
 });
 
 router.post("/like/:paintingId", requireAuth, async (req, res) => {
   const { paintingId } = req.params;
   const userId = req.cookies.niceCookie;
 
-  const result = await Painting.likePainting(paintingId, userId);
+  const result = await Painting.like(paintingId, userId);
 
   if (result.success) {
-      res.status(200).json(result.likes);
+      res.status(200).send(result.message);
   } else {
       res.status(405).send(result.message);
   }

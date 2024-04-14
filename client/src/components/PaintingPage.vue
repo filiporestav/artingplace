@@ -4,20 +4,18 @@
       <h1>{{ painting.name }}</h1>
       <!-- Display all images from imageUrls -->
       <img
-        v-for="(url, index) in imageUrls"
-        :key="index"
-        :src="url"
-        :alt="`Image ${index} of ${painting.name}`"
+        :src="imageUrl"
+        :alt="`Image of ${painting.name}`"
         class="painting-image"
       />
       <p>{{ painting.description }}</p>
       <p>
-        <strong>Seller: {{ painting.username }}</strong>
+        <strong>Seller: {{ owner.username }}</strong>
       </p>
       <p>
         <strong
           >Email to seller:
-          <a :href="`mailto:${painting.email}`">{{ painting.email }}</a></strong
+          <a :href="`mailto:${owner.email}`">{{ owner.email }}</a></strong
         >
       </p>
       <p>
@@ -26,7 +24,6 @@
       <p>
         <strong>Likes: {{ painting.likes }}</strong>
       </p>
-      <button type="button" @click="addToCart">Add to Cart</button>
     </div>
     <div v-else>
       <p>Loading...</p>
@@ -40,45 +37,31 @@ export default {
     return {
       paintingId: null,
       painting: null,
-      imageUrls: [], // Array to store image URLs
+      owner: null,
+      imageUrl: null, // Store image URL here
     };
   },
   created() {
     this.paintingId = this.$route.params.paintingId;
-    Promise.all([
-      fetch(`/api/painting/${this.paintingId}`).then((response) => {
-        if (!response.ok) {
+    fetch(`/api/painting/${this.paintingId}`)
+    .then((response => {
+      if (!response.ok) {
           throw new Error(
             `Failed to fetch painting data: ${response.statusText}`
           );
         }
-        return response.json();
-      }),
-      fetch(`/api/painting/images/${this.paintingId}`).then((response) => {
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch painting images: ${response.statusText}`
-          );
-        }
-        return response.blob(); // Parse the response as Blob
-      }),
-    ])
-      .then(([paintingData, imagesBlob]) => {
-        this.painting = paintingData;
-        this.processBlob(imagesBlob); // Process the blob data
-      })
-      .catch((error) => {
+        return response.json()
+    }))
+    .then(async (data) => {
+      this.painting = data.painting;
+      this.owner = data.owner;
+
+      const imageUrl = await fetch(`/api/images/${this.paintingId}`)
+      this.imageUrl = imageUrl
+    })
+    .catch((error) => {
         console.error("Error fetching painting data and images:", error);
       });
-  },
-  methods: {
-    processBlob(blob) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imageUrls.push(reader.result); // Add the result to imageUrls directly
-      };
-      reader.readAsDataURL(blob); // Read the blob data as a data URL
-    },
   },
 };
 </script>

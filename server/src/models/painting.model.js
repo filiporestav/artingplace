@@ -29,7 +29,12 @@ class Painting {
         }
     }
 
-    async like(paintingId, userId) {
+    static async getImageData(paintingId) {
+        const imageData = dbGet(`SELECT image FROM paintings WHERE painting_id = ?`, paintingId)
+        return imageData
+    }
+
+    static async like(paintingId, userId) {
         try {
             // Check if trying to like their own painting
             const myOwnPaintings = await dbGet(
@@ -70,66 +75,21 @@ class Painting {
             );
     
             this.likes = likes
-            return { success: true, likes: this.likes };
+            return { success: true, message: `Successfully liked painting with id ${paintingId}` };
         } catch (error) {
             console.error("Error liking painting:", error);
             return { success: false, message: "Internal Server Error" };
         }
     }
 
-    static async getAllPaintingsWithDetails() {
+    static async getPaintings() {
         try {
-          const paintings = await dbAll(`SELECT * FROM paintings`);
-    
-          const updatedPaintings = await Promise.all(paintings.map(async (painting) => {
-            const featuredImage = await dbGet(
-              `SELECT data FROM images WHERE image_id = ? LIMIT 1`,
-              painting.featured_image_id,
-            );
-    
-            const createdBy = await dbGet(
-              `SELECT username FROM users WHERE user_id = ? LIMIT 1`,
-              painting.user_id,
-            );
-    
-            return {
-              ...painting,
-              username: createdBy ? createdBy.username : null,
-              featuredImageData: featuredImage ? featuredImage.data : null,
-            };
-          }));
-    
-          return updatedPaintings;
-        } catch (error) {
-          console.error("Error fetching all paintings with details:", error);
-          throw error; // Re-throw the error to handle it in the router
+            const paintings = await dbAll(`SELECT * FROM paintings`)
+            return paintings
         }
-    }
-    
-    static async getImagesByPaintingId(paintingId, res) {
-        try {
-            const imagesInBlob = await dbAll(
-                `SELECT data FROM images WHERE painting_id = ?`,
-                paintingId,
-            );
-
-            // Set the appropriate Content-Type header for the response
-            res.writeHead(200, {
-                "Content-Type": "image/jpeg",
-            });
-
-            // Write all images to the response
-            imagesInBlob.forEach((image) => {
-                res.write(image.data, "binary"); // Write the image data
-            });
-
-            res.end(); // End response after writing all images
-        } catch (error) {
-            console.error(
-                `Error fetching images with painting ID ${paintingId}:`,
-                error,
-            );
-            res.status(500).send("Error fetching images");
+        catch (error) {
+            console.error("Error fetching paintings", error)
+            return []
         }
     }
 
@@ -146,12 +106,12 @@ class Painting {
 
     static async findById(paintingId) {
         try {
-            const painting = await dbGet(`SELECT * FROM paintings WHERE painting_id = ?`, paintingId)
+            const painting = dbGet(`SELECT * FROM paintings WHERE painting_id = ?`, paintingId)
             return painting
         }
         catch (error) {
-            console.error("Error fetching painting:", error)
-            return null
+            console.error("Error fetching paintings", error)
+            return []
         }
     }
 }

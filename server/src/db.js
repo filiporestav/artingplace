@@ -31,7 +31,6 @@ await resetTables()
 
 // We have a one-to-many relationship
 // One user can have multiple paintings, but one painting can only have one artist
-// Also, one painting can have several images (one to many)
 
 // the "one" side
 const createUserTable = `

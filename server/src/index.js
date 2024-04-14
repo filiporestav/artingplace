@@ -10,6 +10,7 @@ import betterLogging from "better-logging";
 import history from 'connect-history-api-fallback'
 
 import user from "./controllers/user.controller.js";
+import Painting from "./models/painting.model.js";
 import painting from "./controllers/painting.controller.js";
 import { resolvePath } from "./util.js";
 
@@ -116,10 +117,27 @@ io.on("connection", (socket) => {
     }
   })
 
-  // Client emits that a painting has been changed, server listens and emits the new paintings to all clients
-  socket.on("paintingsChanged", (paintings) => {
-    io.emit("updatePaintingList", paintings);
-  });
+  // Called when client is updating painting
+  socket.on("paintingsChanged", async () => {
+    const allPaintings = await Painting.getPaintings()
+    io.emit("updatePaintingList", allPaintings)
+  })
+
+  // Inactivity timer
+  let timer = null
+  socket.on("activity", () => {
+    clearTimeout(timer) // Clear timer before restarting it
+    const skt = socket
+    if (skt.handshake.session.user) {
+      timer = setTimeout(() => {
+        delete skt.handshake.session.user
+        skt.handshake.session.save()
+        console.log("Session deleted in socket due to inactivity")
+        // Also need to remove 'niceCookie' here
+        skt.emit("loggedOut")
+      }, 30000) // 30 sec inactivity timeout
+    }
+  })
 });
 
 server.listen(port, () => {

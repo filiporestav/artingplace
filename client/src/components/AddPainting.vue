@@ -47,6 +47,7 @@
 <script>
 import { mapActions } from "pinia";
 import paintingStore from "../js/stores/paintings";
+import userDataStore from "../js/stores/authenticated";
 
 export default {
   data() {
@@ -57,7 +58,7 @@ export default {
     };
   },
   methods: {
-    ...mapActions(paintingStore, ["updatePaintings"]),
+    ...mapActions(paintingStore, ["updatePaintings", "addPainting", "getPaintings"]),
 
     handleFileChange(event) {
       // Store selected file
@@ -70,9 +71,7 @@ export default {
       const formData = new FormData();
       formData.append("paintingName", this.paintingName);
       formData.append("paintingPrice", this.paintingPrice);
-      if (this.image) {
-        formData.append("image", this.image);
-      }
+      formData.append("image", this.image);
 
       try {
         // Send FormData to backend
@@ -81,8 +80,10 @@ export default {
           body: formData,
         }).then(response => response.json())
           .then(data => {
-            console.log('Success:', data);
-            // Optionally fetch and update local store or emit event
+            console.log('Success:', data.message);
+            const userstore = userDataStore()
+            userstore.socket.emit("paintingsChanged") // Emit change to server
+
             // Reset form fields
             this.paintingName = "";
             this.paintingPrice = "";

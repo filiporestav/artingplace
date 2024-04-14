@@ -82,7 +82,7 @@ import userDataStore from "../js/stores/authenticated";
 
 const router = useRouter();
 
-const store = userDataStore();
+const userStore = userDataStore();
 
 const email = ref("");
 const username = ref("");
@@ -110,16 +110,33 @@ async function register() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(userData),
     })
-    .then((response) => response.json().then(data => ({ data, ok: response.ok })))
-    .then(({ data, ok }) => {
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("Registration failed"); // Throw error if registration fails
+      }
+      return response.json(); // Parse response data
+    })
+    .then(data => {
       message.value = data.message; // Set message regardless of response status
-      if (ok) {
-        const userId = data.cookie;
-        store.login(username, userId);
-        store.socket.emit("login", [username, data.cookie]);
-        router.push("/admin");
-      } else {
-        throw new Error("Error registering user");
+      // Log in the user after successful registration
+      return fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.value, password: password.value }),
+      });
+    })
+    .then(async (res) => {
+      if (!res.ok) {
+        throw new Error("Login failed"); // Throw error if login fails
+      }
+      const data = await res.json(); // Parse login response data
+      message.value = data.message; // Set message from login response
+      // Create express socket io session
+      userStore.socket.emit("login", [data.username, data.cookie]);
+      userStore.login(data.username, data.cookie);
+      // Redirect to paintings page if successfully logged in
+      if (userStore.authenticated) {
+        router.push("/paintings");
       }
     })
     .catch((error) => {
