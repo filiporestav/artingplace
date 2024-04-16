@@ -52,8 +52,10 @@ CREATE TABLE IF NOT EXISTS paintings (
     name TEXT,
     price INTEGER NOT NULL,
     likes INTEGER DEFAULT 0,
+    description TEXT NOT NULL,
     user_id TEXT NOT NULL,
     image BLOB,
+    posted BOOLEAN,
     FOREIGN KEY (user_id) REFERENCES users (user_id)
 )`;
 

@@ -8,24 +8,52 @@ const dbGet = promisify(db.get.bind(db));
 const dbAll = promisify(db.all.bind(db))
 
 class Painting {
-    constructor(name, price, image, userId) {
+    constructor(name, price, description, image, userId) {
         this.paintingId = uuidv4()
         this.name = name
         this.price = price
         this.likes = 0
+        this.description = description
         this.imageBuffer = image
+        this.posted = 0
         this.userId = userId
     }
 
     async save() {
         try {
-            await dbRun(`INSERT INTO paintings (painting_id, name, price, likes, image, user_id)
-            VALUES (?, ?, ?, ?, ?, ?)`,
-            [this.paintingId, this.name, this.price, this.likes, this.imageBuffer, this.userId])
+            await dbRun(`INSERT INTO paintings (painting_id, name, price, likes, description, image, posted, user_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [this.paintingId, this.name, this.price, this.likes, this.description, this.imageBuffer, this.posted, this.userId])
             console.log("Painting saved successfully")
         }
         catch (error) {
             console.error("Error saving painting", error)
+        }
+    }
+
+    // Update the painting
+    static async updateInfo(paintingId, userId, name, price, description, image) {
+        try {
+            await dbRun(`
+                UPDATE paintings 
+                SET name = ?, price = ?, description = ?, image = ?
+                WHERE painting_id = ? AND user_id = ?
+            `,
+            [name, price, description, image, paintingId, userId]);
+            console.log("Painting updated successfully");
+        }
+        catch (error) {
+            console.error("Error updating painting", error);
+        }
+    }
+
+    static async post(paintingId) {
+        try {
+            await dbRun(`UPDATE paintings SET posted = 1 WHERE painting_id = ?`, [paintingId])
+            console.log("Painting set posted")
+        }
+        catch(error) {
+            console.error("Error posting painting with painting ID:", paintingId)
         }
     }
 
@@ -84,7 +112,7 @@ class Painting {
 
     static async getPaintings() {
         try {
-            const paintings = await dbAll(`SELECT * FROM paintings`)
+            const paintings = await dbAll(`SELECT * FROM paintings WHERE posted = 1`) // Just return posted paintings
             return paintings
         }
         catch (error) {
@@ -104,9 +132,10 @@ class Painting {
         }
     }
 
-    static async findById(paintingId) {
+    // Default to check for posted, second argument can be changed to 0 if only unposted painting
+    static async findById(paintingId, posted=1) {
         try {
-            const painting = dbGet(`SELECT * FROM paintings WHERE painting_id = ?`, paintingId)
+            const painting = dbGet(`SELECT * FROM paintings WHERE painting_id = ? AND posted = ?`, paintingId, posted)
             return painting
         }
         catch (error) {
@@ -114,6 +143,7 @@ class Painting {
             return []
         }
     }
+
 }
 
 export default Painting

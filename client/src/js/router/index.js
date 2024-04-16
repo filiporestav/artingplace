@@ -58,8 +58,13 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const userStore = userDataStore()
   console.log(userStore.authenticated)
-  if (!userStore.authenticated && to.path === "/mypaintings") {
+  // Users who are not logged in
+  if (!userStore.authenticated && (to.path === "/mypaintings" || to.path === "/addpainting")) {
     next("/login")
+  }
+  // Users who are logged in endpoints
+  else if (userDataStore.authenticated && (to.path === "/login" || to.path === "/register")) {
+    next("/profile")
   }
   next()
 })

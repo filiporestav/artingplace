@@ -15,7 +15,9 @@ const router = Router();
  * @returns {void}
  */
 const requireAuth = (req, res, next) => {
-  if (req.session.user) {
+  const userId = req.cookies.niceCookie
+  const user = User.findByUserId(userId)
+  if (user) {
     next();
   }
   else {
@@ -24,14 +26,29 @@ const requireAuth = (req, res, next) => {
   }
 };
 
+router.get("/isLoggedIn", async (req, res) => {
+  const cookie = req.cookies.niceCookie
+  if (cookie) {
+    const user = await User.findByUserId(cookie) // Check if user exists in database
+    res.status(200).send({
+      cookie: user.user_id,
+      username: user.username,
+  });
+  }
+  else res.status(401).send("You are not logged in");
+})
+
 // API endpoint for User Login
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-  console.log("Email in router:", email)
-
+  const { email, password } = req.body
   const result = await User.login(email, password);
   if (result.authenticated) {
       res.cookie("niceCookie", result.userId);
+      const user = await User.findByUserId(result.userId)
+      req.session.user = { // Save user session
+        username: user.username,
+        cookie: user.user_id
+      }
       res.status(200).send({
           cookie: result.userId,
           username: result.username,

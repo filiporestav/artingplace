@@ -125,7 +125,7 @@ function logout() {
   }).then((response) => {
     if (response.ok) {
       store.logout();
-      store.session.emit("logout") // Delete session from backend
+      store.socket.emit("logout") // Delete session from backend
     }
   });
 }

@@ -10,6 +10,7 @@ import betterLogging from "better-logging";
 import history from 'connect-history-api-fallback'
 
 import user from "./controllers/user.controller.js";
+import User from "./models/user.model.js";
 import Painting from "./models/painting.model.js";
 import painting from "./controllers/painting.controller.js";
 import { resolvePath } from "./util.js";
@@ -26,41 +27,23 @@ betterLogging(console, {
 
 console.logLevel = 4; // Enable all logging
 
-// Register custom middleware for logging incoming requests
-app.use(
-  betterLogging.expressMiddleware(console, {
-    ip: { show: true, color: Theme.green.base },
-    method: { show: true, color: Theme.green.base },
-    header: { show: false },
-    path: { show: true },
-    body: { show: true },
-  }),
-);
-
-// Used to fix 404 - Not Found when going to direct url
+// History API Fallback
 app.use(history({
   htmlAcceptHeaders: ['text/html', 'application/xhtml+xml']
-}))
+}));
 
-// Configure session management
+// Session Configuration
 const sessionConf = expressSession({
   secret: "Super secret! Shh! Do not tell anyone...",
   resave: true,
   saveUninitialized: true,
 });
-
 app.use(sessionConf);
-io.use(
-  socketIOSession(sessionConf, {
-    autoSave: true,
-    saveUninitialized: true,
-  }),
-);
 
-// Used to parse cookies
+// Cookie Parser
 app.use(cookieParser());
 
-// Enable Helmet Express middleware for security
+// Helmet
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -72,28 +55,29 @@ app.use(
   }),
 );
 
-// Share the session context from express with the Socket.IO server
-// read more here https://socket.io/how-to/use-with-express-session
-io.engine.use(sessionConf);
-
-// Logger
+// Logging
 app.use(morgan("combined"));
 
-// Serve static files
-// app.use(express.static(resolvePath("client", "dist")));
+// Serve Static Files
 app.use(express.static(resolvePath("client", "dist")));
 
-// Register middlewares that parse the body of the request, available under req.body property
+// Body Parsing Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Bind REST controllers to /api/*
+// REST Controllers
 app.use("/api", user.router);
 app.use("/api", painting.router);
 
-io.on("connection", (socket) => {
+// Socket.IO Configuration
+io.use(
+  socketIOSession(sessionConf, {
+    autoSave: true,
+  }),
+);
+
+io.on("connection", async (socket) => {
   console.log("Client connected to socket!");
-  socket.emit("connection", "Client connected to socket!");
 
   socket.on("disconnect", () => {
     console.log("Client disconnected from socket!");
@@ -103,7 +87,6 @@ io.on("connection", (socket) => {
   socket.on("login", (userData) => {
     const skt = socket
     skt.handshake.session.user = userData
-    skt.handshake.session.save()
     console.log("Session saved in socket")
   })
 
@@ -112,7 +95,6 @@ io.on("connection", (socket) => {
     const skt = socket
     if (skt.handshake.session.user) {
       delete skt.handshake.session.user
-      skt.handshake.session.save()
       console.log("Session deleted in socket")
     }
   })
@@ -131,7 +113,6 @@ io.on("connection", (socket) => {
     if (skt.handshake.session.user) {
       timer = setTimeout(() => {
         delete skt.handshake.session.user
-        skt.handshake.session.save()
         console.log("Session deleted in socket due to inactivity")
         // Also need to remove 'niceCookie' here
         skt.emit("loggedOut")
