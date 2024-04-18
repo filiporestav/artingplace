@@ -49,7 +49,7 @@ class Painting {
 
     static async post(paintingId) {
         try {
-            await dbRun(`UPDATE paintings SET posted = 1 WHERE painting_id = ?`, [paintingId])
+            await dbRun(`UPDATE paintings SET posted = TRUE WHERE painting_id = ?`, [paintingId])
             console.log("Painting set posted")
         }
         catch(error) {

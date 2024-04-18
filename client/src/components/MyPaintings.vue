@@ -11,7 +11,8 @@
         :id="painting.painting_id"
         :key="index"
         :name="painting.name"
-        :featured-image="painting.featuredImageData"
+        :username="painting.username"
+        :image-url="`/api/image/${painting.painting_id}`"
         :likes="painting.likes"
         :price="painting.price"
       ></PaintingItem>
@@ -19,32 +20,26 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from "vue";
+<script>
 import PaintingItem from "./PaintingItem.vue";
 import userDataStore from "../js/stores/authenticated";
+import paintingStore from "../js/stores/paintings";
 
-const userStore = userDataStore();
-
-const myPaintings = ref([]);
-
-onMounted(() => {
-  fetch("/api/myPaintings", {
-    method: "GET",
-  })
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
-      }
-      throw new Error("Error from GET request from paintings");
-    })
-    .then((data) => {
-      myPaintings.value = data; // Update the paintings array with our fetched data
-    })
-    .catch((err) => {
-      console.error(err);
-    });
-});
+export default {
+  components: {
+    PaintingItem
+  },
+  data() {
+    return {
+      userStore: userDataStore(),
+      paintingStore: paintingStore(),
+      myPaintings: []
+    };
+  },
+  mounted() {
+    this.myPaintings = this.paintingStore.getPaintingsFrom(this.userStore.cookie)
+  }
+};
 </script>
 
 <style scoped>

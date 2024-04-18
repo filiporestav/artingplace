@@ -17,30 +17,12 @@
 								<h4 class="mb-4 mt-0">Contact details</h4>
 								<!-- Email -->
                                 <div class="col-md-12">
-                                    <label for="inputEmail4" class="form-label">Email *</label>
-                                    <input type="email" class="form-control text-center" id="inputEmail4" placeholder="your@email.com">
-                                </div>
-							</div> <!-- Row END -->
-						</div>
-					</div>
-					<!-- Upload profile -->
-					<div class="col-xxl-4">
-						<div class="bg-secondary-soft px-4 py-5 rounded">
-							<div class="row g-3">
-								<h4 class="mb-4 mt-0">Upload your profile photo</h4>
-								<div class="text-center">
-									<!-- Image upload -->
-									<div class="square position-relative display-2 mb-3">
-										<i class="fas fa-fw fa-user position-absolute top-50 start-50 translate-middle text-secondary"></i>
-									</div>
-									<!-- Button -->
-									<input type="file" id="customFile" name="file" hidden="">
-									<label class="btn btn-success-soft btn-block" for="customFile">Upload</label>
-									<button type="button" class="btn btn-danger-soft">Remove</button>
-									<!-- Content -->
-									<p class="text-muted mt-3 mb-0"><span class="me-1">Note:</span>Minimum size 300px x 300px</p>
+									<p v-if="emailMessage !== ''">{{ emailMessage }}</p>
+									<label for="inputEmail4" class="form-label">New email</label>
+									<input v-model="newEmail" type="email" class="form-control" placeholder="your@email.com">
+									<button type="button" class="btn btn-primary mt-2" @click="changeEmail">Change Email</button>
 								</div>
-							</div>
+							</div> <!-- Row END -->
 						</div>
 					</div>
 				</div> <!-- Row END -->
@@ -49,31 +31,32 @@
 				<div class="row mb-5 gx-5">
 					<div class="col-xxl-6">
 						<div class="bg-secondary-soft px-4 py-5 rounded">
+							<p v-if="passwordMessage !== ''">{{ passwordMessage }}</p>
 							<div class="row g-3">
 								<h4 class="my-4">Change Password</h4>
 								<!-- Old password -->
 								<div class="col-md-6">
 									<label for="exampleInputPassword1" class="form-label">Old password *</label>
-									<input type="password" class="form-control" id="exampleInputPassword1">
+									<input v-model="oldPassword" type="password" class="form-control">
 								</div>
 								<!-- New password -->
 								<div class="col-md-6">
 									<label for="exampleInputPassword2" class="form-label">New password *</label>
-									<input type="password" class="form-control" id="exampleInputPassword2">
+									<input v-model="newPassword" type="password" class="form-control">
 								</div>
 								<!-- Confirm password -->
 								<div class="col-md-12">
 									<label for="exampleInputPassword3" class="form-label">Confirm Password *</label>
-									<input type="password" class="form-control" id="exampleInputPassword3">
+									<input v-model="newConfirmPassword" type="password" class="form-control">
 								</div>
 							</div>
+							<button type="button" @click="changePassword">Change password</button>
 						</div>
 					</div>
 				</div> <!-- Row END -->
 				<!-- button -->
 				<div class="gap-3 d-md-flex justify-content-md-end text-center">
-					<button type="button" class="btn btn-danger btn-lg">Delete profile</button>
-					<button type="button" class="btn btn-primary btn-lg">Update profile</button>
+					<button type="button" class="btn btn-danger btn-lg" @click="deleteProfile">Delete profile</button>
 				</div>
 			</form> <!-- Form END -->
 		</div>
@@ -82,9 +65,100 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import userDataStore from "../js/stores/authenticated";
 
 const userStore = userDataStore()
+const router = useRouter()
+
+const newEmail = ref('')
+const emailMessage = ref('')
+
+const oldPassword = ref('')
+const newPassword = ref('')
+const newConfirmPassword = ref('')
+const passwordMessage = ref('')
+
+function deleteProfile() {
+	fetch(`/api/profile`, {
+		method: "DELETE"
+	})
+	.then((response) => {
+		if (response.ok) {
+			userStore.logout() // Delete from frontend (already deleted from backend)
+			console.log("Profile deleted from backend")
+			router.push("/paintings")
+		}
+		else {
+			throw new Error("Failed to delete profile")
+		}
+	})
+	.catch(error => {
+		console.error(error)
+	})
+}
+
+function changeEmail() {
+    if (newEmail.value === '') {
+        emailMessage.value = "Please enter a valid email."
+        return;
+    }
+    fetch(`/api/email`, {
+        method: "PATCH",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ newEmail: newEmail.value })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Failed to change email")
+        }
+        return response.json()
+    })
+    .then(data => {
+        emailMessage.value = data.message || "Email successfully updated"
+    })
+    .catch(error => {
+        emailMessage.value = error.message || "An error occurred"
+    });
+}
+
+function changePassword() {
+    if (oldPassword.value === '' || newPassword.value === '' || newConfirmPassword.value === '') {
+        passwordMessage.value = "You must provide the old password, the new password, and confirm the new password"
+        return;
+    }
+
+    if (newPassword.value !== newConfirmPassword.value) {
+        passwordMessage.value = "New password and confirm password do not match"
+        return;
+    }
+
+    fetch(`/api/password`, {
+		method: "PATCH",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({
+			oldPassword: oldPassword.value,
+			password: newPassword.value,
+			confirmedPassword: newConfirmPassword.value,
+		}),
+		})
+		.then(async (response) => {
+			if (!response.ok) {
+			// Check if response body contains JSON
+			return response.json().then((data) => {
+				throw new Error(data || "Failed to change password");
+			});
+			}
+			return response.json();
+		})
+		.then((data) => {
+			passwordMessage.value = data.message || "Password successfully updated";
+		})
+		.catch((error) => {
+			passwordMessage.value = error.message || "An error occurred";
+		});
+}
 </script>
 
 <style scoped>

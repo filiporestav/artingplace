@@ -39,7 +39,6 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT UNIQUE,
     username TEXT UNIQUE,
     password TEXT NOT NULL,
-    avatar BLOB,
     createdAt TEXT DEFAULT CURRENT_TIMESTAMP
 )`;
 

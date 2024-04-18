@@ -27,6 +27,10 @@ const paintingStore = defineStore("paintingStore", {
         this.paintings[paintingIndex].likes = newLikes;
       }
     },
+    getPaintingsFrom(userId) {
+      const paintings = this.paintings.filter((painting) => painting.user_id === userId)
+      return paintings
+    }
   },
 });
 

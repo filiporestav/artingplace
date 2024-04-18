@@ -1,7 +1,7 @@
 <template>
   <div class="card">
     <div class="card-header">
-      Title: {{ name }}
+      <b>Title:</b> {{ name }}
       <div v-if="username">
         by <strong>{{ username }}</strong>
       </div>

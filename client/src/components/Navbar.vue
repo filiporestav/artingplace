@@ -48,14 +48,7 @@
             class="d-block link-dark text-decoration-none dropdown-toggle"
             data-bs-toggle="dropdown"
             aria-expanded="false"
-          >
-            <img
-              src="https://github.com/mdo.png"
-              alt="mdo"
-              width="32"
-              height="32"
-              class="rounded-circle"
-            />
+          >My profile
           </a>
           <ul class="dropdown-menu text-small">
             <li>

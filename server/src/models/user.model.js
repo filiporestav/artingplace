@@ -47,6 +47,54 @@ class User {
         }
     }
 
+    static async changeEmailById(cookie, newEmail) {
+        try {
+            await dbRun(`UPDATE users SET email = ? WHERE user_id = ?`, [newEmail, cookie])
+            return { success: true, message: "Succesfully changed email!"}
+        }
+        catch (error) {
+            console.error(error)
+            return { success: false, message: "Failed to change email!"}
+        }
+    }
+
+    static async changePasswordById(cookie, newPassword) {
+        try {
+            const hashedPassword = await bcrypt.hash(newPassword, 10)
+            await dbRun(`UPDATE users SET password = ? WHERE user_id = ?`, [hashedPassword, cookie])
+            return { success: true, message: "Successfully changed password!"}
+        }
+        catch (error) {
+            console.error(error)
+            return { success: false, message: "Failed to change password!"}
+        }
+    }
+
+    static async checkPassword(cookie, password) {
+        try {
+            const user = await dbGet(`SELECT * FROM users WHERE user_id = ?`, cookie)
+            const credentialsCorrect = await bcrypt.compare(password, user.password)
+            if (credentialsCorrect) {
+                return { success: true }
+            }
+            return { success: false, message: "Old password is not correct"}
+        }
+        catch (error) {
+            console.error(error)
+            return { success: false, message: "Internal Server Error"}
+        }
+    }
+
+    static async deleteById(userId) {
+        try {
+            await dbRun(`DELETE FROM users WHERE user_id = ?`, userId)
+            return { success: true }
+        }
+        catch (error) {
+            return { success: false }
+        }
+    }
+
     static async login(email, password) {
         try {
             const user = await dbGet(`SELECT * FROM users WHERE email = ?`, [email]);
@@ -86,7 +134,7 @@ class User {
     }
 
     static async findByEmail(email) {
-        const user = await dbGet(`SELECT * FROM users WHERE username = ?`, [email])
+        const user = await dbGet(`SELECT * FROM users WHERE email = ?`, [email])
         return user // Returns user object if defined, otherwise undefined
     }
 }

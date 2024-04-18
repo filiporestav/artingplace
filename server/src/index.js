@@ -10,7 +10,6 @@ import betterLogging from "better-logging";
 import history from 'connect-history-api-fallback'
 
 import user from "./controllers/user.controller.js";
-import User from "./models/user.model.js";
 import Painting from "./models/painting.model.js";
 import painting from "./controllers/painting.controller.js";
 import { resolvePath } from "./util.js";

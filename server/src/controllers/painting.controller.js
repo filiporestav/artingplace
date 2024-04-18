@@ -29,7 +29,6 @@ router.get("/checkPreviousPaintingSession", async (req, res) => {
   const paintingSessionId = req.cookies.latestPaintingId
   if (paintingSessionId) {
     const painting = await Painting.findById(paintingSessionId, 0) // Check for unposted paintings
-    console.log(painting.image)
     if (painting) res.status(200).send(painting)
     else res.status(404).send("No previous unlisted painting found")
   }
@@ -49,8 +48,9 @@ router.post("/painting", requireAuth, upload.single("image"), async (req, res) =
     }
     else {
       const painting = new Painting(paintingName, paintingPrice, paintingDescription, image, userId);
-      await Painting.post(painting.paintingId)
       await painting.save();
+      await Painting.post(painting.paintingId)
+      console.log("Painting saved")
     }
     res.clearCookie("latestPaintingId") // Clear the painting ID tracker
     res.status(200).send({ message: "Painting uploaded successfully"});
@@ -112,7 +112,8 @@ router.get("/paintings", async (req, res) => {
 router.get("/myPaintings", requireAuth, async (req, res) => {
   const userId = req.cookies.niceCookie;
   try {
-    const paintings = await Painting.getUserPaintingsWithFeaturedImages(userId)
+    const paintings = await Painting.findByUserId(userId)
+    console.log(paintings)
     res.status(200).json(paintings) // Send all paintings to client
   }
   catch (error) {

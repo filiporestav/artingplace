@@ -97,18 +97,11 @@ async function register() {
       return; // Exit early if passwords don't match
     }
 
-    const userData = {
-      email: email.value,
-      username: username.value,
-      password: password.value,
-      confirmedPassword: confirmedPassword.value,
-    };
-
     // Register user
     fetch("/api/register", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(userData),
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({username: username.value, password: password.value, confirmedPassword: confirmedPassword.value, email: email.value})
     })
     .then(response => {
       if (!response.ok) {

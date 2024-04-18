@@ -1,4 +1,5 @@
 import { Router } from "express";
+import multer from "multer";
 import { promisify } from "util";
 
 import db from "../db.js";
@@ -26,6 +27,15 @@ const requireAuth = (req, res, next) => {
   }
 };
 
+// Middleware for validation of passwords
+const validatePasswords = (req, res, next) => {
+  const { password, confirmedPassword } = req.body;
+  if (password !== confirmedPassword) {
+    return res.status(400).send("Password and confirmed password do not match");
+  }
+  return next();
+};
+
 router.get("/isLoggedIn", async (req, res) => {
   const cookie = req.cookies.niceCookie
   if (cookie) {
@@ -36,6 +46,52 @@ router.get("/isLoggedIn", async (req, res) => {
   });
   }
   else res.status(401).send("You are not logged in");
+})
+
+router.delete("/profile", requireAuth, async (req, res) => {
+  const cookie = req.cookies.niceCookie
+  const result = await User.deleteById(cookie)
+  if (result.success) {
+    res.status(200).json(result.message)
+  }
+  else {
+    res.status(500).json(result.message)
+  }
+})
+
+// Change email
+router.patch("/email", async (req, res) => {
+  const cookie = req.cookies.niceCookie
+  const { newEmail } = req.body
+  if (cookie) {
+    const result = await User.changeEmailById(cookie, newEmail)
+    if (result.success) {
+      res.status(200).json(result.message)
+    }
+    else {
+      res.status(500).json(result.message)
+    }
+  }
+})
+
+// Change password
+router.patch("/password", validatePasswords, async (req, res) => {
+  const cookie = req.cookies.niceCookie
+  const { oldPassword, password } = req.body
+  // Check if previous password is correct
+  const prevPasswordResult = await User.checkPassword(cookie, oldPassword)
+  if (prevPasswordResult.success) {
+    const result = await User.changePasswordById(cookie, password)
+    if (result.success) {
+      res.status(200).json(result.message)
+    }
+    else {
+      res.status(500).json(result.message)
+    }
+  }
+  else {
+    res.status(401).json(prevPasswordResult.message)
+  }
 })
 
 // API endpoint for User Login
@@ -59,20 +115,13 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Middleware for validation
-const validateRegistration = (req, res, next) => {
-  const { password, confirmedPassword } = req.body;
-  if (password !== confirmedPassword) {
-    return res.status(400).send("Password and confirmed password do not match");
-  }
-  return next();
-};
-
 // API endpoint for User registration
-router.post("/register", validateRegistration, async (req, res) => {
+router.post("/register", validatePasswords, async (req, res) => {
   const { email, username, password } = req.body;
   const newUser = new User(username, email, password)
+  console.log(newUser)
   const result = await newUser.save()
+  console.log(result)
   if (result.success) {
     res.status(201).json({message: result.message, cookie: result.cookie})
   }
