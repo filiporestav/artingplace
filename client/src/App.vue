@@ -41,6 +41,9 @@ export default {
       userStore.login(data.username, data.cookie)
       console.log("You are now authenticated")
     })
+    .catch((error) => {
+      console.log("You are not logged in", error)
+    })
 
     this.socket = io.connect({
       autoConnect: true,

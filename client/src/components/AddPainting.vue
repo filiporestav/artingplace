@@ -46,12 +46,15 @@
             @change="handleFileChange"
           />
         </label>
+        <div>
+          <img v-if="imageURL" :src="imageURL" alt="Preview painting image">
+        </div>
         <button
           type="submit"
           class="btn btn-primary"
           @click.prevent="uploadPainting"
         >
-          Upload
+          Upload painting
         </button>
       </div>
       <div>
@@ -62,17 +65,18 @@
 </template>
 
 <script>
-import { mapActions } from "pinia";
-import paintingStore from "../js/stores/paintings";
 import userDataStore from "../js/stores/authenticated";
 
 export default {
   data() {
     return {
+      paintingId: "",
       paintingName: "",
       paintingPrice: "",
       paintingDescription: "",
       image: null,
+      imageURL: null,
+      blob: null,
       message: "",
       pendingChanges: null,
       saveTimeout: null
@@ -87,12 +91,16 @@ export default {
       }
       return response.json()
     })
-    .then((painting) => {
+    .then(async (painting) => {
       // Restore the values
       this.paintingName = painting.name
       this.paintingPrice = painting.price
       this.paintingDescription = painting.description
-      this.message = "You must upload the image again, since our server does not store them."
+      this.paintingId = painting.painting_id
+      this.imageURL = `/api/image/${this.paintingId}` // Fetch the image uploaded previously (if any)
+
+      const file = new File([this.blob], "painting-image.jpg", { type: "image/jpeg"})
+      this.image = file // Set fetched file object to vue data property
     })
     .catch(() => {
       console.log("You have no previous painting sessions")
@@ -105,6 +113,7 @@ export default {
         const [file] = event.target.files
         if (file) {
           this.image = file
+          this.imageURL = URL.createObjectURL(file)
           this.handleInputChange(); // Trigger input change when file changes
         }
       }
