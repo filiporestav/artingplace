@@ -44,7 +44,7 @@ export default {
     }),
   },
   mounted() {
-    console.log(this.paintings)
+    console.log(this.paintings);
   },
   methods: {
     ...mapActions(paintingStore, ["changeLikes"]),

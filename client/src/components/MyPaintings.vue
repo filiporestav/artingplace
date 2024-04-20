@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref } from "vue";
 import PaintingItem from "./PaintingItem.vue";
 import userDataStore from "../js/stores/authenticated";
 import paintingStore from "../js/stores/paintings";
@@ -29,41 +29,41 @@ const thePaintingStore = paintingStore();
 const myPaintings = ref([]);
 
 onMounted(() => {
-  myPaintings.value = thePaintingStore.getPaintingsFrom(
-    userStore.cookie
-  );
-})
+  myPaintings.value = thePaintingStore.getPaintingsFrom(userStore.cookie);
+});
 
 // Check if I own a certain painting id (early stopping)
 function checkIfMyPainting(paintingId) {
-  return myPaintings.value.some(painting => painting.painting_id === paintingId);
+  return myPaintings.value.some(
+    (painting) => painting.painting_id === paintingId
+  );
 }
 
 function deletePainting(index) {
-  const paintingId = myPaintings.value[index].painting_id
-  console.log("Received request to delete painting")
-  console.log(checkIfMyPainting(paintingId))
+  const paintingId = myPaintings.value[index].painting_id;
+  console.log("Received request to delete painting");
+  console.log(checkIfMyPainting(paintingId));
   if (checkIfMyPainting(paintingId)) {
     fetch(`/api/painting/${paintingId}`, {
       method: "DELETE",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({paintingId})
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paintingId }),
     })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Could not delete painting")
-      }
-      return response.json()
-    })
-    .then((res) => {
-      console.log(res.message)
-      myPaintings.value.splice(index, 1);
-      // Send call to other clients
-      userStore.socket.emit("paintingsChanged")
-    })
-    .catch((error) => {
-      console.error("Error deleting painting", error)
-    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Could not delete painting");
+        }
+        return response.json();
+      })
+      .then((res) => {
+        console.log(res.message);
+        myPaintings.value.splice(index, 1);
+        // Send call to other clients
+        userStore.socket.emit("paintingsChanged");
+      })
+      .catch((error) => {
+        console.error("Error deleting painting", error);
+      });
   }
 }
 </script>

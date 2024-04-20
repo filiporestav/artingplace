@@ -69,22 +69,22 @@ router.post(
 );
 
 router.delete("/painting/:paintingId", async (req, res) => {
-  const { paintingId } = req.params
-  const userId = req.cookies.niceCookie
-  const user = await Painting.findById(paintingId)
+  const { paintingId } = req.params;
+  const userId = req.cookies.niceCookie;
+  const user = await Painting.findById(paintingId);
   if (user.user_id === userId) {
-    const result = await Painting.deleteById(paintingId)
+    const result = await Painting.deleteById(paintingId);
     if (result.success) {
-      res.status(200).send({ message: result.message})
+      res.status(200).send({ message: result.message });
+    } else {
+      res.status(500).send({ message: result.message });
     }
-    else {
-      res.status(500).send({ message: result.message})
-    }
+  } else {
+    res
+      .status(401)
+      .send({ message: "The painting you tried to delete is not yours" });
   }
-  else {
-    res.status(401).send({ message: "The painting you tried to delete is not yours"})
-  }
-})
+});
 
 // Endpoint to save current data from client
 router.post(
@@ -115,12 +115,10 @@ router.post(
         const { paintingId } = painting;
         res.cookie("latestPaintingId", paintingId); // Set cookie to the browser to remember this painting
         await painting.save(); // Insert it in database
-        res
-          .status(200)
-          .send({
-            painting,
-            message: "Painting created and saved successfully",
-          });
+        res.status(200).send({
+          painting,
+          message: "Painting created and saved successfully",
+        });
       } else {
         console.log("Painting ID found.");
         const painting = await Painting.findById(prevPaintingId, 0); // Find unlisted painting

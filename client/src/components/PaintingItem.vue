@@ -1,8 +1,6 @@
 <template>
   <div class="card">
-    <div class="card-header">
-      <b>Title:</b> {{ name }}
-    </div>
+    <div class="card-header"><b>Title:</b> {{ name }}</div>
     <div class="card-body">
       <router-link :to="'/painting/' + id">
         <img :src="imageUrl" alt="Featured image" class="card-img-top" />
@@ -14,7 +12,13 @@
         <i class="bi bi-heart">{{ likes }}</i>
       </button>
     </div>
-    <button v-if="userStore.cookie === userId" type="button" @click="deletePainting">Delete</button>
+    <button
+      v-if="userStore.cookie === userId"
+      type="button"
+      @click="deletePainting"
+    >
+      Delete
+    </button>
   </div>
 </template>
 
@@ -22,8 +26,8 @@
 import { defineEmits } from "vue";
 import userDataStore from "../js/stores/authenticated";
 
-const emit = defineEmits(['delete', 'like']);
-const userStore = userDataStore()
+const emit = defineEmits(["delete", "like"]);
+const userStore = userDataStore();
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -36,7 +40,7 @@ const props = defineProps({
 });
 
 function deletePainting() {
-  emit("delete", props.id)
+  emit("delete", props.id);
 }
 
 function handleLike() {

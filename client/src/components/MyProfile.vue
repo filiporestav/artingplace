@@ -271,10 +271,7 @@ body {
   border: 1px solid #e5dfe4;
   appearance: none;
   appearance: none;
-  appearance: none;
   border-radius: 5px;
-  transition: border-color 0.15s ease-in-out,
-    -webkit-box-shadow 0.15s ease-in-out;
   transition: border-color 0.15s ease-in-out,
     -webkit-box-shadow 0.15s ease-in-out;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;

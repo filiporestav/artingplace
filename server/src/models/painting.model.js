@@ -156,12 +156,11 @@ class Painting {
 
   static async deleteById(paintingId) {
     try {
-      await dbRun(`DELETE FROM paintings WHERE painting_id = ?`, paintingId)
-      return { success: true, message: "Successfully deleted painting"}
-    }
-    catch(error) {
-      console.error("Error deleting painting", error)
-      return { success: false, message: "Error when deleting painting"}
+      await dbRun(`DELETE FROM paintings WHERE painting_id = ?`, paintingId);
+      return { success: true, message: "Successfully deleted painting" };
+    } catch (error) {
+      console.error("Error deleting painting", error);
+      return { success: false, message: "Error when deleting painting" };
     }
   }
 
