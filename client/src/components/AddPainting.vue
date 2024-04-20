@@ -47,7 +47,7 @@
           />
         </label>
         <div>
-          <img v-if="imageURL" :src="imageURL" alt="Preview painting image">
+          <img v-if="imageURL" :src="imageURL" alt="Preview painting image" />
         </div>
         <button
           type="submit"
@@ -79,41 +79,43 @@ export default {
       blob: null,
       message: "",
       pendingChanges: null,
-      saveTimeout: null
+      saveTimeout: null,
     };
   },
   mounted() {
     // Check if there was any painting the user was publishing
     fetch(`/api/checkPreviousPaintingSession`)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("You have no previous painting listing available")
-      }
-      return response.json()
-    })
-    .then(async (painting) => {
-      // Restore the values
-      this.paintingName = painting.name
-      this.paintingPrice = painting.price
-      this.paintingDescription = painting.description
-      this.paintingId = painting.painting_id
-      this.imageURL = `/api/image/${this.paintingId}` // Fetch the image uploaded previously (if any)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("You have no previous painting listing available");
+        }
+        return response.json();
+      })
+      .then(async (painting) => {
+        // Restore the values
+        this.paintingName = painting.name;
+        this.paintingPrice = painting.price;
+        this.paintingDescription = painting.description;
+        this.paintingId = painting.painting_id;
+        this.imageURL = `/api/image/${this.paintingId}`; // Fetch the image uploaded previously (if any)
 
-      const file = new File([this.blob], "painting-image.jpg", { type: "image/jpeg"})
-      this.image = file // Set fetched file object to vue data property
-    })
-    .catch(() => {
-      console.log("You have no previous painting sessions")
-    })
+        const file = new File([this.blob], "painting-image.jpg", {
+          type: "image/jpeg",
+        });
+        this.image = file; // Set fetched file object to vue data property
+      })
+      .catch(() => {
+        console.log("You have no previous painting sessions");
+      });
   },
   methods: {
     handleFileChange(event) {
       // Store selected file
       if (event.target.files.length > 0) {
-        const [file] = event.target.files
+        const [file] = event.target.files;
         if (file) {
-          this.image = file
-          this.imageURL = URL.createObjectURL(file)
+          this.image = file;
+          this.imageURL = URL.createObjectURL(file);
           this.handleInputChange(); // Trigger input change when file changes
         }
       }
@@ -127,7 +129,8 @@ export default {
       formData.append("image", this.image);
 
       if (!this.image) {
-        this.message = "You must upload a picture of the image before uploading it.";
+        this.message =
+          "You must upload a picture of the image before uploading it.";
         return;
       }
 
@@ -137,12 +140,14 @@ export default {
       }
 
       if (!this.paintingPrice) {
-        this.message = "You must give the painting a price before uploading it.";
+        this.message =
+          "You must give the painting a price before uploading it.";
         return;
       }
 
       if (!this.paintingDescription) {
-        this.message = "You must give the painting a description before uploading it.";
+        this.message =
+          "You must give the painting a description before uploading it.";
         return;
       }
 
@@ -153,7 +158,7 @@ export default {
         });
 
         const data = await response.json();
-        console.log('Success:', data.message);
+        console.log("Success:", data.message);
 
         const userstore = userDataStore();
         userstore.socket.emit("paintingsChanged");
@@ -161,7 +166,7 @@ export default {
         this.resetForm();
         this.resetSaveTimer();
       } catch (error) {
-        console.error('Error:', error);
+        console.error("Error:", error);
       }
     },
 
@@ -189,7 +194,10 @@ export default {
       this.pendingChanges = new FormData();
       this.pendingChanges.append("paintingName", this.paintingName);
       this.pendingChanges.append("paintingPrice", this.paintingPrice);
-      this.pendingChanges.append("paintingDescription", this.paintingDescription);
+      this.pendingChanges.append(
+        "paintingDescription",
+        this.paintingDescription
+      );
       this.pendingChanges.append("image", this.image);
 
       if (this.saveTimeout) {
@@ -202,19 +210,19 @@ export default {
         try {
           console.log("Saving changes to the database:", this.pendingChanges);
           const response = await fetch("/api/saveChanges", {
-            method: 'POST',
-            body: this.pendingChanges
+            method: "POST",
+            body: this.pendingChanges,
           });
 
           // Handle response if needed
-          console.log(response)
+          console.log(response);
 
           this.resetSaveTimer();
         } catch (error) {
-          console.error('Fetch Error:', error);
+          console.error("Fetch Error:", error);
         }
       }
     },
-  }
+  },
 };
 </script>

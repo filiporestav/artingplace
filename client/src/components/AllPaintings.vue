@@ -14,7 +14,7 @@
         :id="painting.painting_id"
         :key="index"
         :name="painting.name"
-        :username="painting.username"
+        :user_id="painting.user_id"
         :image-url="`/api/image/${painting.painting_id}`"
         :likes="painting.likes"
         :price="painting.price"
@@ -43,6 +43,9 @@ export default {
       authenticated: "authenticated",
     }),
   },
+  mounted() {
+    console.log(this.paintings)
+  },
   methods: {
     ...mapActions(paintingStore, ["changeLikes"]),
     // Like the painting
@@ -59,8 +62,8 @@ export default {
           if (!response.ok) {
             console.error("Failed to like the painting:", message);
           } else {
-            console.log(message)
-            const userstore = userDataStore()
+            console.log(message);
+            const userstore = userDataStore();
             userstore.socket.emit("paintingsChanged");
           }
         } catch (error) {

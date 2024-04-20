@@ -7,7 +7,7 @@ import socketIOSession from "express-socket.io-session";
 import { Server } from "socket.io";
 import morgan from "morgan";
 import betterLogging from "better-logging";
-import history from 'connect-history-api-fallback'
+import history from "connect-history-api-fallback";
 
 import user from "./controllers/user.controller.js";
 import Painting from "./models/painting.model.js";
@@ -27,9 +27,11 @@ betterLogging(console, {
 console.logLevel = 4; // Enable all logging
 
 // History API Fallback
-app.use(history({
-  htmlAcceptHeaders: ['text/html', 'application/xhtml+xml']
-}));
+app.use(
+  history({
+    htmlAcceptHeaders: ["text/html", "application/xhtml+xml"],
+  }),
+);
 
 // Session Configuration
 const sessionConf = expressSession({
@@ -84,40 +86,40 @@ io.on("connection", async (socket) => {
 
   // Express socket io session
   socket.on("login", (userData) => {
-    const skt = socket
-    skt.handshake.session.user = userData
-    console.log("Session saved in socket")
-  })
+    const skt = socket;
+    skt.handshake.session.user = userData;
+    console.log("Session saved in socket");
+  });
 
   // Delete socket io session
   socket.on("logout", () => {
-    const skt = socket
+    const skt = socket;
     if (skt.handshake.session.user) {
-      delete skt.handshake.session.user
-      console.log("Session deleted in socket")
+      delete skt.handshake.session.user;
+      console.log("Session deleted in socket");
     }
-  })
+  });
 
   // Called when client is updating painting
   socket.on("paintingsChanged", async () => {
-    const allPaintings = await Painting.getPaintings()
-    io.emit("updatePaintingList", allPaintings)
-  })
+    const allPaintings = await Painting.getPaintings();
+    io.emit("updatePaintingList", allPaintings);
+  });
 
   // Inactivity timer
-  let timer = null
+  let timer = null;
   socket.on("activity", () => {
-    clearTimeout(timer) // Clear timer before restarting it
-    const skt = socket
+    clearTimeout(timer); // Clear timer before restarting it
+    const skt = socket;
     if (skt.handshake.session.user) {
       timer = setTimeout(() => {
-        delete skt.handshake.session.user
-        console.log("Session deleted in socket due to inactivity")
+        delete skt.handshake.session.user;
+        console.log("Session deleted in socket due to inactivity");
         // Also need to remove 'niceCookie' here
-        skt.emit("loggedOut")
-      }, 30000) // 30 sec inactivity timeout
+        skt.emit("loggedOut");
+      }, 30000); // 30 sec inactivity timeout
     }
-  })
+  });
 });
 
 server.listen(port, () => {

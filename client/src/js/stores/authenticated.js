@@ -10,7 +10,7 @@ const userDataStore = defineStore("userDataStore", {
   }),
   actions: {
     initSocket(socket) {
-      this.socket = socket
+      this.socket = socket;
     },
     login(username, cookie) {
       this.authenticated = true;

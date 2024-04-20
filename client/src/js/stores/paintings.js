@@ -28,9 +28,11 @@ const paintingStore = defineStore("paintingStore", {
       }
     },
     getPaintingsFrom(userId) {
-      const paintings = this.paintings.filter((painting) => painting.user_id === userId)
-      return paintings
-    }
+      const paintings = this.paintings.filter(
+        (painting) => painting.user_id === userId
+      );
+      return paintings;
+    },
   },
 });
 

@@ -91,25 +91,29 @@ const confirmedPassword = ref("");
 const message = ref("");
 
 async function register() {
+  if (password.value !== confirmedPassword.value) {
+    message.value = "Password and confirmed password do not match.";
+    return; // Exit early if passwords don't match
+  }
 
-    if (password.value !== confirmedPassword.value) {
-      message.value = "Password and confirmed password do not match.";
-      return; // Exit early if passwords don't match
-    }
-
-    // Register user
-    fetch("/api/register", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({username: username.value, password: password.value, confirmedPassword: confirmedPassword.value, email: email.value})
-    })
-    .then(response => {
+  // Register user
+  fetch("/api/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: username.value,
+      password: password.value,
+      confirmedPassword: confirmedPassword.value,
+      email: email.value,
+    }),
+  })
+    .then((response) => {
       if (!response.ok) {
         throw new Error("Registration failed"); // Throw error if registration fails
       }
       return response.json(); // Parse response data
     })
-    .then(data => {
+    .then((data) => {
       message.value = data.message; // Set message regardless of response status
       // Log in the user after successful registration
       return fetch("/api/login", {
@@ -136,7 +140,6 @@ async function register() {
       // Catch any errors during the fetch or processing
       message.value = error.message; // Display error message
     });
-
 }
 </script>
 

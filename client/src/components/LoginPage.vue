@@ -73,26 +73,25 @@ function login() {
   })
     .then(async (res) => {
       if (res.ok) {
-        const data = await res.json()
-        message.value = data.message
+        const data = await res.json();
+        message.value = data.message;
         // Create express socket io session
-        userStore.socket.emit("login", [data.username, data.cookie])
+        userStore.socket.emit("login", [data.username, data.cookie]);
         userStore.login(data.username, data.cookie);
         // Redirect to paintings page if successfully logged in
-        console.log(userStore.authenticated)
+        console.log(userStore.authenticated);
         if (userStore.authenticated) {
           router.push("/paintings");
         }
-      }
-      else {
-        const errMsg = await res.json()
-        message.value = errMsg.message
-        throw Error("Error signing in")
+      } else {
+        const errMsg = await res.json();
+        message.value = errMsg.message;
+        throw Error("Error signing in");
       }
     })
-    .catch(error => {
-      console.error(error)
-    })
+    .catch((error) => {
+      console.error(error);
+    });
 }
 </script>
 

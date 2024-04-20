@@ -48,7 +48,7 @@
             class="d-block link-dark text-decoration-none dropdown-toggle"
             data-bs-toggle="dropdown"
             aria-expanded="false"
-          >My profile
+            >My profile
           </a>
           <ul class="dropdown-menu text-small">
             <li>
@@ -118,7 +118,7 @@ function logout() {
   }).then((response) => {
     if (response.ok) {
       store.logout();
-      store.socket.emit("logout") // Delete session from backend
+      store.socket.emit("logout"); // Delete session from backend
     }
   });
 }

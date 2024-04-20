@@ -47,7 +47,7 @@ const routes = [
   {
     path: "/profile",
     component: MyProfile,
-  }
+  },
 ];
 
 const router = createRouter({
@@ -56,17 +56,23 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  const userStore = userDataStore()
-  console.log(userStore.authenticated)
+  const userStore = userDataStore();
+  console.log(userStore.authenticated);
   // Users who are not logged in
-  if (!userStore.authenticated && (to.path === "/mypaintings" || to.path === "/addpainting")) {
-    next("/login")
+  if (
+    !userStore.authenticated &&
+    (to.path === "/mypaintings" || to.path === "/addpainting")
+  ) {
+    next("/login");
   }
   // Users who are logged in endpoints
-  else if (userDataStore.authenticated && (to.path === "/login" || to.path === "/register")) {
-    next("/profile")
+  else if (
+    userDataStore.authenticated &&
+    (to.path === "/login" || to.path === "/register")
+  ) {
+    next("/profile");
   }
-  next()
-})
+  next();
+});
 
 export default router;

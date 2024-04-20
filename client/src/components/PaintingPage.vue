@@ -42,21 +42,21 @@ export default {
   created() {
     this.paintingId = this.$route.params.paintingId;
     fetch(`/api/painting/${this.paintingId}`)
-    .then((response => {
-      if (!response.ok) {
+      .then((response) => {
+        if (!response.ok) {
           throw new Error(
             `Failed to fetch painting data: ${response.statusText}`
           );
         }
-        return response.json()
-    }))
-    .then(async (data) => {
-      this.painting = data.painting;
-      this.owner = data.owner;
+        return response.json();
+      })
+      .then(async (data) => {
+        this.painting = data.painting;
+        this.owner = data.owner;
       })
       .catch((error) => {
-          console.error("Error fetching painting data", error);
-        });
+        console.error("Error fetching painting data", error);
+      });
   },
 };
 </script>
