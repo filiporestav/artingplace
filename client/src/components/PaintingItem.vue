@@ -13,7 +13,7 @@
       </button>
     </div>
     <button
-      v-if="userStore.cookie === userId"
+      v-if="userStore.cookie === userId && userStore.cookie"
       type="button"
       @click="deletePainting"
     >

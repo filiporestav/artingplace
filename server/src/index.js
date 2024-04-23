@@ -1,5 +1,6 @@
 import express from "express";
-import { createServer } from "http";
+import { createServer } from "https";
+import fs from 'fs' // Read from file
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import expressSession from "express-session";
@@ -16,7 +17,13 @@ import { resolvePath } from "./util.js";
 
 const port = process.env.PORT || 8989;
 const app = express(); // Build an express server
-const server = createServer(app);
+
+// SSL certificate options
+const options = {
+  key: fs.readFileSync('./cert/key.pem'),
+  cert: fs.readFileSync('./cert/cert.pem')
+}
+const server = createServer(options, app);
 const io = new Server(server);
 
 const { Theme } = betterLogging;
