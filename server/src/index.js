@@ -51,17 +51,7 @@ app.use(sessionConf);
 // Cookie Parser
 app.use(cookieParser());
 
-// Helmet
-app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-        "img-src": ["'self'", "blob:", "data:"], // Allow img-sources from BLOB urls
-      },
-    },
-  }),
-);
+app.use(helmet())
 
 // Logging
 app.use(morgan("combined"));
