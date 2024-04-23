@@ -165,6 +165,7 @@ export default {
 
         this.resetForm();
         this.resetSaveTimer();
+        this.$root.$router.push("/paintings")
       } catch (error) {
         console.error("Error:", error);
       }
